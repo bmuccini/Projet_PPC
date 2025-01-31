@@ -1,32 +1,40 @@
 from multiprocessing import Process, Manager
-from normal_trafic_gen import queue_nord, queue_sud, queue_est, queue_ouest
 import time
 
-
-class coordinator:
-
-    def __init__(self):
-        self.bonjour = 1
-
-
-    def lire_trafic(self):
-
+def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest):
+    """Lit les véhicules des files de messages et les traite."""
+    while True:
         # Lire les véhicules des files de messages
         if not queue_nord.empty():
-            self.queue_nord = queue_nord.get()
+            vehicule_nord = queue_nord.get()
+            print(f"Véhicule Nord traité : {vehicule_nord}")
 
         if not queue_sud.empty():
-            self.queue_sud = queue_sud.get()
+            vehicule_sud = queue_sud.get()
+            print(f"Véhicule Sud traité : {vehicule_sud}")
 
         if not queue_est.empty():
-            self.queue_est = queue_est.get()
+            vehicule_est = queue_est.get()
+            print(f"Véhicule Est traité : {vehicule_est}")
 
         if not queue_ouest.empty():
-            self.vehicule_ouest = queue_ouest.get()
+            vehicule_ouest = queue_ouest.get()
+            print(f"Véhicule Ouest traité : {vehicule_ouest}")
 
         time.sleep(1)  # Vérifier les files toutes les secondes
 
+if __name__ == "__main__":
+    # Créer un Manager pour partager les files de messages
+    with Manager() as manager:
+        # Créer les files de messages partagées
+        queue_nord = manager.Queue()
+        queue_sud = manager.Queue()
+        queue_est = manager.Queue()
+        queue_ouest = manager.Queue()
 
+        # Démarrer le processus de gestion du trafic
+        Process(target=gerer_traffic, args=(queue_nord, queue_sud, queue_est, queue_ouest)).start()
 
-
-
+        # Garder le programme principal en vie
+        while True:
+            time.sleep(1)
