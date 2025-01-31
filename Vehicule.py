@@ -35,13 +35,49 @@ class Vehicule:
         print("hello")
 
     def avancer(self):
-        print("hello")
+
+        if self.orientation == "N":
+            self.position_y += 5
+        
+        if self.orientation == "S":
+            self.position_y -= 5
+        
+        if self.orientation == "E":
+            self.position_x += 5
+        
+        if self.orientation == "W":
+            self.position_x -= 5
+
     
     def arreter(self):
         print("hello")
 
     def tourner_gauche (self):
-        print("hello")
+
+        if self.orientation == "N":
+            self.orientation = "W"
+        
+        if self.orientation == "S":
+            self.orientation = "E"
+        
+        if self.orientation == "E":
+            self.orientation = "N"
+        
+        if self.orientation == "W":
+            self.orientation = "S"
+
 
     def tourner_droite (self):
-        print("hello")
+
+        if self.orientation == "N":
+            self.orientation = "E"
+        
+        if self.orientation == "S":
+            self.orientation = "W"
+        
+        if self.orientation == "E":
+            self.orientation = "S"
+        
+        if self.orientation == "W":
+            self.orientation = "N"
+    

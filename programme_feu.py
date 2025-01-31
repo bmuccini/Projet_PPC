@@ -31,6 +31,11 @@ def changement_feu(dico_feu):
         time.sleep(10) #On prend un temps reglementaire
         feu_N.rouge()
         feu_S.rouge()
+        feu_E.rouge()
+        feu_W.rouge()
+        time.sleep(2)
+        feu_N.rouge()
+        feu_S.rouge()
         feu_E.vert()
         feu_W.vert()
         time.sleep(10)
