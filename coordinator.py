@@ -1,4 +1,4 @@
-from multiprocessing import Queue
+from multiprocessing import Process, Manager
 from normal_trafic_gen import queue_nord, queue_sud, queue_est, queue_ouest
 import time
 

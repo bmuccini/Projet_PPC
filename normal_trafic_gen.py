@@ -1,21 +1,9 @@
-from multiprocessing import Queue
+from multiprocessing import Process, Manager
 from Vehicule import Vehicule
 from random import randint
 import time
 
-# Taille des files de messages
-QUEUE_SIZE = 10
-
-# Files de messages pour les 4 directions
-queue_nord = Queue(QUEUE_SIZE)
-queue_sud = Queue(QUEUE_SIZE)
-queue_est = Queue(QUEUE_SIZE)
-queue_ouest = Queue(QUEUE_SIZE)
-
-
-def generation_trafic_normal():
-
-    
+def generation_trafic_normal(queue_nord, queue_sud, queue_est, queue_ouest):    
 
     #Creation des vehicules
     while True :
@@ -45,5 +33,19 @@ def generation_trafic_normal():
 
         time.sleep(2) #temps entre chaque généraation de véhicule
 
+
 if __name__ == "__main__":
-    generation_trafic_normal()
+    # Créer un Manager pour partager les files de messages
+    with Manager() as manager:
+        # Créer les files de messages partagées
+        queue_nord = manager.Queue()
+        queue_sud = manager.Queue()
+        queue_est = manager.Queue()
+        queue_ouest = manager.Queue()
+
+        # Démarrer le processus de génération de trafic
+        Process(target=generation_trafic_normal, args=(queue_nord, queue_sud, queue_est, queue_ouest)).start()
+
+        # Garder le programme principal en vie
+        while True:
+            time.sleep(1)
