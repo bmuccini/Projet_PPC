@@ -12,23 +12,23 @@ class Vehicule:
         
         if self.depart == "N":
             self.orientation = "S"
-            self.position_x 
-            self.position_y
+            self.position_x = 0
+            self.position_y = 0
 
         elif self.depart == "S":
             self.orientation = "N"
-            self.position_x
-            self.position_y
+            self.position_x = 0
+            self.position_y = 0
         
         elif self.depart == "E":
             self.orientation = "W"
-            self.position_x
-            self.position_y
+            self.position_x = 0
+            self.position_y = 0
         
         else :
             self.orientation = "E"
-            self.position_x
-            self.position_y
+            self.position_x = 0
+            self.position_y = 0
 
     def affichage_vehicule(self):
         #affichage du vehicule 

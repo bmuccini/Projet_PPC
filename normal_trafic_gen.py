@@ -15,12 +15,16 @@ queue_ouest = Queue(QUEUE_SIZE)
 
 def generation_trafic_normal():
 
-    liste_direction = ["N","S","E","W"] #On prend la première lettre de chaque direction (N pour nord par exemple)
+    
 
     #Creation des vehicules
     while True :
+        liste_direction = ["N","S","E","W"] #On prend la première lettre de chaque direction (N pour nord par exemple)
+
         depart = liste_direction[randint(0,3)]
         liste_direction.remove(depart)
+
+        print(liste_direction)
         
         arrivee = liste_direction[randint(0,2)]
 
@@ -41,5 +45,5 @@ def generation_trafic_normal():
 
         time.sleep(2) #temps entre chaque généraation de véhicule
 
-#if __name__ == "__main__":
-#    generation_trafic_normals()
+if __name__ == "__main__":
+    generation_trafic_normal()

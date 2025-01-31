@@ -1,5 +1,5 @@
 from multiprocessing import Queue
-from normal_traffic_gen import queue_nord, queue_sud, queue_est, queue_ouest
+from normal_trafic_gen import queue_nord, queue_sud, queue_est, queue_ouest
 import time
 
 def gerer_traffic():
@@ -24,5 +24,8 @@ def gerer_traffic():
 
         time.sleep(1)  # Vérifier les files toutes les secondes
 
+
+
 if __name__ == "__main__":
     gerer_traffic()
+
