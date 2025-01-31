@@ -1,3 +1,4 @@
+from multiprocessing import Queue
 import time
 from random import randint
 from Vehicule import Vehicule
@@ -17,5 +18,8 @@ def generation_trafic_prioritaire():
         vehicule = Vehicule(depart, arrivee, True) #True pour signifier véhicule prioritaire
 
         time.sleep(12) #temps entre chaque généraation de véhicule prioritaire
+
+
+
 
 
