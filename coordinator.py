@@ -2,30 +2,31 @@ from multiprocessing import Queue
 from normal_trafic_gen import queue_nord, queue_sud, queue_est, queue_ouest
 import time
 
-def gerer_traffic():
-    """Lit les véhicules des files de messages et les traite."""
-    while True:
+
+class coordinator:
+
+    def __init__(self):
+        self.bonjour = 1
+
+
+    def lire_trafic(self):
+
         # Lire les véhicules des files de messages
         if not queue_nord.empty():
-            vehicule_nord = queue_nord.get()
-            print(f"Véhicule Nord traité : {vehicule_nord}")
+            self.queue_nord = queue_nord.get()
 
         if not queue_sud.empty():
-            vehicule_sud = queue_sud.get()
-            print(f"Véhicule Sud traité : {vehicule_sud}")
+            self.queue_sud = queue_sud.get()
 
         if not queue_est.empty():
-            vehicule_est = queue_est.get()
-            print(f"Véhicule Est traité : {vehicule_est}")
+            self.queue_est = queue_est.get()
 
         if not queue_ouest.empty():
-            vehicule_ouest = queue_ouest.get()
-            print(f"Véhicule Ouest traité : {vehicule_ouest}")
+            self.vehicule_ouest = queue_ouest.get()
 
         time.sleep(1)  # Vérifier les files toutes les secondes
 
 
 
-if __name__ == "__main__":
-    gerer_traffic()
+
 
