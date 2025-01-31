@@ -1,51 +1,53 @@
-from multiprocessing import Process, Manager
+import sysv_ipc
 from Vehicule import Vehicule
 from random import randint
 import time
+import pickle
 
-def generation_trafic_normal(queue_nord, queue_sud, queue_est, queue_ouest):    
+# Clés pour les files de messages
+KEY_NORD = 1000
+KEY_SUD = 1001
+KEY_EST = 1002
+KEY_OUEST = 1003
 
-    #Creation des vehicules
-    while True :
-        liste_direction = ["N","S","E","W"] #On prend la première lettre de chaque direction (N pour nord par exemple)
+def creation_files_messages():
+    """Crée les files de messages System V."""
+    try:
+        queue_nord = sysv_ipc.MessageQueue(KEY_NORD, sysv_ipc.IPC_CREAT)
+        queue_sud = sysv_ipc.MessageQueue(KEY_SUD, sysv_ipc.IPC_CREAT)
+        queue_est = sysv_ipc.MessageQueue(KEY_EST, sysv_ipc.IPC_CREAT)
+        queue_ouest = sysv_ipc.MessageQueue(KEY_OUEST, sysv_ipc.IPC_CREAT)
+        return queue_nord, queue_sud, queue_est, queue_ouest
+    except sysv_ipc.ExistentialError:
+        print("Erreur : Les files de messages existent déjà.")
+        exit(1)
 
-        depart = liste_direction[randint(0,3)]
+def generation_trafic_normal(queue_nord, queue_sud, queue_est, queue_ouest):
+    """Génère des véhicules et les ajoute aux files de messages."""
+    while True:
+        liste_direction = ["N", "S", "E", "W"]
+        depart = liste_direction[randint(0, 3)]
         liste_direction.remove(depart)
-
-        print(liste_direction)
-        
-        arrivee = liste_direction[randint(0,2)]
+        arrivee = liste_direction[randint(0, 2)]
 
         vehicule = Vehicule(depart, arrivee, False)
+        message = pickle.dumps(vehicule)  # Sérialiser avec pickle
 
         if depart == "N":
-            queue_nord.put(vehicule)
+            queue_nord.send(message)
             print(f"Véhicule Nord ajouté : {vehicule}")
         elif depart == "S":
-            queue_sud.put(vehicule)
+            queue_sud.send(message)
             print(f"Véhicule Sud ajouté : {vehicule}")
         elif depart == "E":
-            queue_est.put(vehicule)
+            queue_est.send(message)
             print(f"Véhicule Est ajouté : {vehicule}")
         else:
-            queue_ouest.put(vehicule)
+            queue_ouest.send(message)
             print(f"Véhicule Ouest ajouté : {vehicule}")
 
-        time.sleep(2) #temps entre chaque généraation de véhicule
-
+        time.sleep(2)
 
 if __name__ == "__main__":
-    # Créer un Manager pour partager les files de messages
-    with Manager() as manager:
-        # Créer les files de messages partagées
-        queue_nord = manager.Queue()
-        queue_sud = manager.Queue()
-        queue_est = manager.Queue()
-        queue_ouest = manager.Queue()
-
-        # Démarrer le processus de génération de trafic
-        Process(target=generation_trafic_normal, args=(queue_nord, queue_sud, queue_est, queue_ouest)).start()
-
-        # Garder le programme principal en vie
-        while True:
-            time.sleep(1)
+    queue_nord, queue_sud, queue_est, queue_ouest = creation_files_messages()
+    generation_trafic_normal(queue_nord, queue_sud, queue_est, queue_ouest)

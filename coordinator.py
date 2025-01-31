@@ -1,40 +1,59 @@
-from multiprocessing import Process, Manager
+import sysv_ipc
+import pickle
+from Vehicule import Vehicule
 import time
+
+# Clés pour les files de messages
+KEY_NORD = 1000
+KEY_SUD = 1001
+KEY_EST = 1002
+KEY_OUEST = 1003
+
+def ouvrir_files_messages():
+    """Ouvre les files de messages System V."""
+    try:
+        queue_nord = sysv_ipc.MessageQueue(KEY_NORD)
+        queue_sud = sysv_ipc.MessageQueue(KEY_SUD)
+        queue_est = sysv_ipc.MessageQueue(KEY_EST)
+        queue_ouest = sysv_ipc.MessageQueue(KEY_OUEST)
+        return queue_nord, queue_sud, queue_est, queue_ouest
+    except sysv_ipc.ExistentialError:
+        print("Erreur : Les files de messages n'existent pas.")
+        exit(1)
 
 def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest):
     """Lit les véhicules des files de messages et les traite."""
     while True:
-        # Lire les véhicules des files de messages
-        if not queue_nord.empty():
-            vehicule_nord = queue_nord.get()
+        try:
+            message_nord, _ = queue_nord.receive(block=False)
+            vehicule_nord = pickle.loads(message_nord)  # Désérialiser avec pickle
             print(f"Véhicule Nord traité : {vehicule_nord}")
+        except sysv_ipc.BusyError:
+            pass
 
-        if not queue_sud.empty():
-            vehicule_sud = queue_sud.get()
+        try:
+            message_sud, _ = queue_sud.receive(block=False)
+            vehicule_sud = pickle.loads(message_sud)
             print(f"Véhicule Sud traité : {vehicule_sud}")
+        except sysv_ipc.BusyError:
+            pass
 
-        if not queue_est.empty():
-            vehicule_est = queue_est.get()
+        try:
+            message_est, _ = queue_est.receive(block=False)
+            vehicule_est = pickle.loads(message_est)
             print(f"Véhicule Est traité : {vehicule_est}")
+        except sysv_ipc.BusyError:
+            pass
 
-        if not queue_ouest.empty():
-            vehicule_ouest = queue_ouest.get()
+        try:
+            message_ouest, _ = queue_ouest.receive(block=False)
+            vehicule_ouest = pickle.loads(message_ouest)
             print(f"Véhicule Ouest traité : {vehicule_ouest}")
+        except sysv_ipc.BusyError:
+            pass
 
-        time.sleep(1)  # Vérifier les files toutes les secondes
+        time.sleep(1)
 
 if __name__ == "__main__":
-    # Créer un Manager pour partager les files de messages
-    with Manager() as manager:
-        # Créer les files de messages partagées
-        queue_nord = manager.Queue()
-        queue_sud = manager.Queue()
-        queue_est = manager.Queue()
-        queue_ouest = manager.Queue()
-
-        # Démarrer le processus de gestion du trafic
-        Process(target=gerer_traffic, args=(queue_nord, queue_sud, queue_est, queue_ouest)).start()
-
-        # Garder le programme principal en vie
-        while True:
-            time.sleep(1)
+    queue_nord, queue_sud, queue_est, queue_ouest = ouvrir_files_messages()
+    gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest)
