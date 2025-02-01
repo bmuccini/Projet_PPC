@@ -1,0 +1,2 @@
+# ignore tous les fichiers avec les extensions suivantes
+*.venv
