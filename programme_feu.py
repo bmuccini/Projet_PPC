@@ -51,12 +51,12 @@ def priorite_traffic_feu(dico_feu, position):
             feu.rouge()
 """
 
-
+"""
 import time
 from shared_memory import create_shared_memory
 
 def changement_feu(shared_lights):
-    """Alterner les feux et mettre à jour la mémoire partagée"""
+    #Alterner les feux et mettre à jour la mémoire partagée
     while True:
         # Étape 1 : Feux N/S au vert, E/W au rouge
         shared_lights["N"] = "vert"  # Met à jour directement la mémoire partagée
@@ -91,6 +91,7 @@ def changement_feu(shared_lights):
         time.sleep(2)
 
 """
+"""
 def priorite_traffic_feu(shared_lights, position):
     #Donner la priorité à un véhicule d'urgence en changeant le feu concerné en vert
     for direction in shared_lights.keys():
@@ -99,7 +100,9 @@ def priorite_traffic_feu(shared_lights, position):
         else:
             shared_lights[direction] = "rouge"
     print(f"🚨 Priorité accordée au véhicule sur {position} : {dict(shared_lights)}")
-"""
+
+
+
 
 if __name__ == "__main__":
     # Initialisation de la mémoire partagée
@@ -109,3 +112,40 @@ if __name__ == "__main__":
     changement_feu(shared_lights)
 
 # Maintenant, changement_feu() peut mettre à jour la mémoire partagée
+"""
+
+
+import time
+from shared_memory import create_shared_memory, get_shared_lights, set_shared_lights
+
+def changement_feu(shm):
+    """Alterner les feux dans la mémoire partagée."""
+    while True:
+        # Étape 1 : Feux N/S verts, E/W rouges
+        lights = get_shared_lights(shm)
+        lights.update({"N": "vert", "S": "vert", "E": "rouge", "W": "rouge"})
+        set_shared_lights(shm, lights)
+        print(f"Feux N/S verts : {lights}")
+        time.sleep(10)
+
+        # Étape 2 : Transition (tout rouge)
+        lights.update({"N": "rouge", "S": "rouge"})
+        set_shared_lights(shm, lights)
+        print(f"Transition : {lights}")
+        time.sleep(2)
+
+        # Étape 3 : Feux E/W verts, N/S rouges
+        lights.update({"E": "vert", "W": "vert", "N": "rouge", "S": "rouge"})
+        set_shared_lights(shm, lights)
+        print(f"Feux E/W verts : {lights}")
+        time.sleep(10)
+
+        # Étape 4 : Transition (tout rouge)
+        lights.update({"E": "rouge", "W": "rouge"})
+        set_shared_lights(shm, lights)
+        print(f"Transition : {lights}")
+        time.sleep(2)
+
+if __name__ == "__main__":
+    shm = create_shared_memory()
+    changement_feu(shm)
