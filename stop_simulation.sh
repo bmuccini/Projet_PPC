@@ -3,10 +3,11 @@
 echo "🛑 Arrêt de la simulation..."
 
 # Trouver et tuer tous les processus Python liés à la simulation
-pkill -f programme_feu.py
+pkill -f display.py
+pkill -f lights.py
+pkill -f coordinator.py
 pkill -f normal_trafic_gen.py
 pkill -f priority_trafic_gen.py
-pkill -f coordinator.py
 
 echo "✅ Tous les processus ont été arrêtés."
 
