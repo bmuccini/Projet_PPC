@@ -1,3 +1,4 @@
+#
 """
 import time
 from Feu import Feu
@@ -116,84 +117,144 @@ if __name__ == "__main__":
 
 
 import time
-from shared_memory import create_shared_memory, get_shared_lights, set_shared_lights
+#import sysv_ipc
 import threading
-import sysv_ipc
+import socket
+from shared_memory import create_shared_memory, get_shared_lights, set_shared_lights
+
+SOCKET_PORT = 65432
 
 # Clé du sémaphore de signalisation
-SIGNAL_KEY = 5678
+#SIGNAL_KEY = 5678
 
 # Initialisation de l'Event pour gérer les véhicules prioritaires
-priorite_event = threading.Event()
+#priorite_event = threading.Event()
 
-def ecouter_signal_prioritaire():
-    """Thread qui écoute les signaux des véhicules prioritaires."""
-    signal_semaphore = sysv_ipc.Semaphore(SIGNAL_KEY, sysv_ipc.IPC_CREAT, initial_value=0)
+#def ecouter_signal_prioritaire():
+    #"""Thread qui écoute les signaux des véhicules prioritaires."""
+    #signal_semaphore = sysv_ipc.Semaphore(SIGNAL_KEY, sysv_ipc.IPC_CREAT, initial_value=0)
     
-    while True:
-        signal_semaphore.acquire()  # Attendre un signal de `priority_trafic_gen.py`
-        priorite_event.set()  # Déclencher l'event pour la gestion prioritaire
+    #while True:
+        #signal_semaphore.acquire()  # Attendre un signal de `priority_trafic_gen.py`
+        #priorite_event.set()  # Déclencher l'event pour la gestion prioritaire
 
-def changement_feu(shm):
-    """Gère l'alternance normale des feux dans la mémoire partagée et réagit aux véhicules prioritaires"""
-    while True:
+class TrafficLight:
+    def __init__(self):
+        self.shm = create_shared_memory()
+        self.priority_event = threading.Event()
+        self.priority_direction = None
+        self._setup_socket_server()
+        #self.cycle_paused = False  # Flag pour gérer l'interruption
 
-        if priorite_event.is_set():  # Si un véhicule prioritaire est signalé
-            lights = get_shared_lights(shm)
+    def _setup_socket_server(self):
+        def listener():
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('localhost', SOCKET_PORT))
+                s.listen()
+                while True:
+                    conn, _ = s.accept()
+                    with conn:
+                        data = conn.recv(1024).decode()
+                        if data.startswith('PRIORITY'):
+                            _, direction = data.split(':')
+                            self.priority_direction = direction
+                            self.priority_event.set()
+                            print(f"🚨 Signal reçu : priorité à {direction}")
 
-            # On garde l'état du feu avant l'interruption
-            print(f"⚠️ Passage véhicule prioritaire, arrêt du cycle normal.")
-            priorite_event.clear()  # Reset du signal pour la prochaine alerte
+        threading.Thread(target=listener, daemon=True).start()
 
-            # Lire l'origine du véhicule prioritaire (en supposant que c'est stocké dans la mémoire partagée)
-            origine_prioritaire = lights["priorite"]  # Stocke la direction du véhicule prioritaire
+    def run_cycle(self):
+        while True:
+            if self.priority_event.is_set():
+                # Phase prioritaire (4s vert + 1s rouge)
+                self._handle_priority()
+            else:
+                # Cycle normal
+                self.normal_cycle()
 
-            # Tous les feux en rouge sauf celui d'origine du véhicule prioritaire
-            for direction in ["N", "S", "E", "W"]:
-                lights[direction] = "rouge"
-            lights[origine_prioritaire] = "vert"
+    def _handle_priority(self):
+        """Gère l'activation des feux prioritaires."""
+        # Feu prioritaire vert
+        lights = {d: "rouge" for d in ["N", "S", "E", "W"]}
+        lights[self.priority_direction] = "vert"
+        set_shared_lights(self.shm, lights)
+        print(f"🚨 FEU {self.priority_direction} VERT (5s)")
+        time.sleep(5)
 
-            set_shared_lights(shm, lights)  # Mettre à jour la mémoire partagée
-            print(f"🚨 Feu prioritaire activé : {origine_prioritaire} est maintenant vert.")
+        #Tous les feux rouges
+        lights = {d: "rouge" for d in ["N", "S", "E", "W"]}
+        set_shared_lights(self.shm, lights)
+        print("🔴 Tous les feux rouges (2s)")
+        time.sleep(2)
 
-            time.sleep(5)  # Laisse passer le véhicule prioritaire
+        self.priority_event.clear()
 
-            # Rétablir le cycle normal des feux après le passage du véhicule prioritaire
-            print("🔄 Reprise du cycle normal.")
-            priorite_event.clear()  # Réinitialiser l'event pour attendre un nouveau véhicule prioritaire
-        else :
-            # Cycle normal des feux
-            # Étape 1 : Feux N/S verts, E/W rouges
-            lights = get_shared_lights(shm)
-            lights.update({"N": "vert", "S": "vert", "E": "rouge", "W": "rouge"})
-            set_shared_lights(shm, lights)
-            print(f"Feux N/S verts : {lights}")
-            time.sleep(10)
+    def normal_cycle(self):
+        """Gère le cycle normal des feux."""
+        lights = {"N": "vert", "S": "vert", "E": "rouge", "W": "rouge"}
+        set_shared_lights(self.shm, lights)
+        print("🟢 N/S verts | 🔴 E/W rouges")
+        time.sleep(10)
 
-            # Étape 2 : Transition (tout rouge)
-            lights.update({"N": "rouge", "S": "rouge"})
-            set_shared_lights(shm, lights)
-            print(f"Transition : {lights}")
-            time.sleep(2)
+        lights = {"N": "rouge", "S": "rouge", "E": "rouge", "W": "rouge"}
+        set_shared_lights(self.shm, lights)
+        print("🔴 Transition : Tous rouges")
+        time.sleep(2)
 
-            # Étape 3 : Feux E/W verts, N/S rouges
-            lights.update({"E": "vert", "W": "vert", "N": "rouge", "S": "rouge"})
-            set_shared_lights(shm, lights)
-            print(f"Feux E/W verts : {lights}")
-            time.sleep(10)
+        lights = {"E": "vert", "W": "vert", "N": "rouge", "S": "rouge"}
+        set_shared_lights(self.shm, lights)
+        print("🟢 E/W verts | 🔴 N/S rouges")
+        time.sleep(10)
 
-            # Étape 4 : Transition (tout rouge)
-            lights.update({"E": "rouge", "W": "rouge"})
-            set_shared_lights(shm, lights)
-            print(f"Transition : {lights}")
-            time.sleep(2)
+        lights = {"N": "rouge", "S": "rouge", "E": "rouge", "W": "rouge"}
+        set_shared_lights(self.shm, lights)
+        print("🔴 Transition : Tous rouges")
+        time.sleep(2)
+
 
 if __name__ == "__main__":
-    shm = create_shared_memory()
-    
+    TrafficLight().run_cycle()
+
+
+""""
+def changement_feu(shm):
+    #Gère l'alternance normale des feux dans la mémoire partagée et réagit aux véhicules prioritaires
+    while True:
+
+        # Cycle normal des feux
+        # Étape 1 : Feux N/S verts, E/W rouges
+        lights = get_shared_lights(shm)
+        lights.update({"N": "vert", "S": "vert", "E": "rouge", "W": "rouge"})
+        set_shared_lights(shm, lights)
+        print(f"Feux N/S verts : {lights}")
+        time.sleep(10)
+
+        # Étape 2 : Transition (tout rouge)
+        lights.update({"N": "rouge", "S": "rouge"})
+        set_shared_lights(shm, lights)
+        print(f"Transition : {lights}")
+        time.sleep(2)
+
+        # Étape 3 : Feux E/W verts, N/S rouges
+        lights.update({"E": "vert", "W": "vert", "N": "rouge", "S": "rouge"})
+        set_shared_lights(shm, lights)
+        print(f"Feux E/W verts : {lights}")
+        time.sleep(10)
+
+        # Étape 4 : Transition (tout rouge)
+        lights.update({"E": "rouge", "W": "rouge"})
+        set_shared_lights(shm, lights)
+        print(f"Transition : {lights}")
+        time.sleep(2)"""
+
+#if __name__ == "__main__":
+#    shm = create_shared_memory()
+#    traffic_light = TrafficLight()
+#    traffic_light.run(shm)
+
     # Lancer le thread qui écoute le signal des véhicules prioritaires
-    signal_thread = threading.Thread(target=ecouter_signal_prioritaire, daemon=True)
-    signal_thread.start()
+    #signal_thread = threading.Thread(target=ecouter_signal_prioritaire, daemon=True)
+    #signal_thread.start()
 
     # Lancer la gestion des feux
-    changement_feu(shm)
+    #changement_feu(shm)

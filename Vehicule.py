@@ -1,14 +1,17 @@
 class Vehicule:
 
-    def __init__(self, depart, arrivee, prioritaire):
+    def __init__(self, depart, arrivee, prioritaire = False):
         self.depart = depart
         self.arrivee = arrivee
         self.prioritaire = prioritaire
 
-        self.positionnement_voiture()
+        #self.positionnement_voiture()
+
+    def __repr__(self):
+        return f"Véhicule({self.depart}->{self.arrivee}, prioritaire={self.prioritaire})"
 
 
-    def positionnement_voiture(self):
+"""    def positionnement_voiture(self):
         
         if self.depart == "N":
             self.orientation = "S"
@@ -80,4 +83,4 @@ class Vehicule:
         
         if self.orientation == "W":
             self.orientation = "N"
-    
+    """
