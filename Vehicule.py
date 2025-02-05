@@ -21,31 +21,31 @@ class Vehicule:
         
         if self.depart == "N":
             self.orientation = "S"
-            self.position_x = 0
-            self.position_y = 0
+            self.position_x = 550
+            self.position_y = 10
 
         elif self.depart == "S":
             self.orientation = "N"
-            self.position_x = 0
-            self.position_y = 0
+            self.position_x = 650
+            self.position_y = 790
         
         elif self.depart == "E":
             self.orientation = "W"
-            self.position_x = 0
-            self.position_y = 0
+            self.position_x = 1190
+            self.position_y = 350
         
         else :
             self.orientation = "E"
-            self.position_x = 0
-            self.position_y = 0
+            self.position_x = 10
+            self.position_y = 450
 
     def avancer(self):
 
         if self.orientation == "N":
-            self.position_y += self.vitesse 
+            self.position_y -= self.vitesse 
         
         if self.orientation == "S":
-            self.position_y -= self.vitesse 
+            self.position_y += self.vitesse 
         
         if self.orientation == "E":
             self.position_x += self.vitesse 

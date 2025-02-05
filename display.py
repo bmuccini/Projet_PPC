@@ -95,7 +95,7 @@ def draw_vehicles():
             continue  # Supprimer le véhicule arrivé de la liste
 
         color = YELLOW if prioritaire else BLUE  # Bleu pour normal, Jaune pour prioritaire
-        pygame.draw.rect(screen, color, (x, y, 20, 10))
+        pygame.draw.rect(screen, color, (x, y, 20, 20))
         new_active_vehicles.append((x, y, depart, arrivee, prioritaire))
 
     active_vehicles = new_active_vehicles  # Mettre à jour la liste des véhicules actifs
