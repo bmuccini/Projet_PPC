@@ -49,7 +49,7 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
 
         while queue.current_messages == 0:
             message, _ = queue.receive()
-            vehicule = (pickle.loads(message))
+            vehicule : Vehicule = (pickle.loads(message))  # Pour desérialiser l'objet vehicule
 
             if verif_vehicule_devant(vehicule, queue) :
                 vehicule.arreter()
@@ -126,22 +126,37 @@ def verif_priorite_droite (vehicule, queue_face):
     return False
 
 def verif_virage (vehicule):
-    if vehicule.arrivee == "N":
-        point_virage_x = 0 #a changer
-        point_virage_y = 0 #a changer
+    if vehicule.depart == "N":
+        if vehicule.arrivee == "E":
+            point_virage_x = 0 #a changer
+            point_virage_y = 0 #a changer
+        elif vehicule.arrivee == "W":
+            point_virage_x = 0 #a changer
+            point_virage_y = 0 #a changer
 
-    elif vehicule.arrivee == "S":
-        point_virage_x = 0 #a changer
-        point_virage_y = 0 #a changer
+    elif vehicule.depart == "S":
+        if vehicule.arrivee == "E":
+            point_virage_x = 0 #a changer
+            point_virage_y = 0 #a changer
+        elif vehicule.arrivee == "W":
+            point_virage_x = 0 #a changer
+            point_virage_y = 0 #a changer
 
-    elif vehicule.arrivee == "E":
-        point_virage_x = 0 #a changer
-        point_virage_y = 0 #a changer
+    elif vehicule.depart == "E":
+        if vehicule.arrivee == "N":
+            point_virage_x = 0 #a changer
+            point_virage_y = 0 #a changer
+        elif vehicule.arrivee == "S":
+            point_virage_x = 0 #a changer
+            point_virage_y = 0 #a changer
 
-    elif vehicule.arrivee == "W":
-        point_virage_x = 0 #a changer
-        point_virage_y = 0 #a changer
-    
+    elif vehicule.depart == "W":
+        if vehicule.arrivee == "N":
+            point_virage_x = 0 #a changer
+            point_virage_y = 0 #a changer
+        elif vehicule.arrivee == "S":
+            point_virage_x = 0 #a changer
+            point_virage_y = 0 #a changer
     
     if abs(vehicule.position_x - point_virage_x < 5) and abs(vehicule.position_y - point_virage_y < 5) : 
         if vehicule.prochain_virage == "gauche":

@@ -42,3 +42,8 @@ def get_shared_lights(shm):
 def set_shared_lights(shm, lights):
     """Écrit les états des feux dans la mémoire partagée."""
     shm.write(pickle.dumps(lights))
+
+def update_shared_lights(shm, key, new_value):
+    lights = get_shared_lights(shm)
+    lights[key] = new_value
+    set_shared_lights(shm, lights)
