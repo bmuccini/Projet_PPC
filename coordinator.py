@@ -47,7 +47,6 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
         
         # Lire l'état des feux depuis la mémoire partagée
         # Les états des feux lus au début de chaque itération de la boucle pour utiliser toujours les dernières valeurs des feux
-        shared_lights = get_shared_lights(shm)
         feu_nord = shared_lights["N"]
         feu_sud = shared_lights["S"]
         feu_est = shared_lights["E"]
@@ -75,6 +74,122 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
         send_update_to_display(shm, vehicles)
 
         time.sleep(1)
+
+###Ce que j'ai fait###
+def gerer_traffic_2(queue_nord, queue_sud, queue_est, queue_ouest, shm):
+    shared_lights = get_shared_lights(shm)
+    
+    for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
+        feu = shared_lights[direction]
+
+        while queue.current_messages == 0:
+            message, _ = queue.receive()
+            vehicule = (pickle.loads(message))
+
+            if verif_vehicule_devant(vehicule, queue) :
+                vehicule.arreter()
+            
+            elif feu.couleur == "rouge":
+                if verif_feu (vehicule, feu) :
+                    vehicule.arreter()
+
+            elif  (-100 < vehicule.position_x < 100) and (-100 < vehicule.position_y < 100) : #coordonnées à modifier
+                if direction == "N" :
+                    queue_face = queue_sud
+                elif direction == "S" :
+                    queue_face = queue_nord
+                elif direction == "E" :
+                    queue_face = queue_ouest
+                else :
+                    queue_face = queue_est
+                
+                if verif_priorite_droite (vehicule, queue_face):
+                    vehicule.arreter()
+            
+            else :
+                verif_virage (vehicule)
+                vehicule.avancer()
+
+
+
+def verif_feu (vehicule, feu) :
+
+    difference_position_x = abs(vehicule.position_x - feu.position_x)
+    difference_position_y = abs(vehicule.position_y - feu.position_y)
+
+    if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != feu.orientation:
+        return True
+    
+    else :
+        return False
+
+def verif_vehicule_devant (vehicule, queue) :
+    while queue.current_messages == 0:
+        message, _ = queue.receive()
+        vehicule_devant = (pickle.loads(message))
+
+        if vehicule_devant != vehicule :
+            difference_position_x = abs(vehicule.position_x - vehicule_devant.position_x)
+            difference_position_y = abs(vehicule.position_y - vehicule_devant.position_y)
+
+            if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation == vehicule_devant.orientation:
+                return True 
+            
+    return False
+
+
+def verif_priorite_droite (vehicule, queue_face):
+    if vehicule.prochain_virage == "face" or vehicule.prochain_virage == "droite" :
+        return False
+    
+    else : 
+        while queue_face.current_messages == 0:
+            message, _ = queue_face.receive()
+            vehicule_face = (pickle.loads(message))
+
+            if vehicule_face != vehicule :
+                difference_position_x = abs(vehicule.position_x - vehicule_face.position_x)
+                difference_position_y = abs(vehicule.position_y - vehicule_face.position_y)
+
+                if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != vehicule_face.orientation:
+                    
+                    if vehicule_face.prochain_virage == "face" or vehicule_face.prochain_virage == "droite" :
+                        return True
+       
+    return False
+
+def verif_virage (vehicule):
+    if vehicule.arrivee == "N":
+        point_virage_x = 0 #a changer
+        point_virage_y = 0 #a changer
+
+    elif vehicule.arrivee == "S":
+        point_virage_x = 0 #a changer
+        point_virage_y = 0 #a changer
+
+    elif vehicule.arrivee == "E":
+        point_virage_x = 0 #a changer
+        point_virage_y = 0 #a changer
+
+    elif vehicule.arrivee == "W":
+        point_virage_x = 0 #a changer
+        point_virage_y = 0 #a changer
+    
+    
+    if abs(vehicule.position_x - point_virage_x < 5) and abs(vehicule.position_y - point_virage_y < 5) : 
+        if vehicule.prochain_virage == "gauche":
+            vehicule.tourner_gauche()
+
+        elif vehicule.prochain_virage == "droite":
+             vehicule.tourner_droite()
+
+
+        
+
+    
+
+
+
 
 """
         try:

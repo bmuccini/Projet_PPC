@@ -4,14 +4,20 @@ class Vehicule:
         self.depart = depart
         self.arrivee = arrivee
         self.prioritaire = prioritaire
-
-        #self.positionnement_voiture()
+        
+        if prioritaire :
+            self.vitesse = 10
+        else :
+            self.vitesse = 5
+        
+        self.positionnement_vehicule()
+        self.prochain_virage()
 
     def __repr__(self):
         return f"Véhicule({self.depart}->{self.arrivee}, prioritaire={self.prioritaire})"
 
 
-"""    def positionnement_voiture(self):
+    def positionnement_vehicule(self):
         
         if self.depart == "N":
             self.orientation = "S"
@@ -33,23 +39,19 @@ class Vehicule:
             self.position_x = 0
             self.position_y = 0
 
-    def affichage_vehicule(self):
-        #affichage du vehicule 
-        print("hello")
-
     def avancer(self):
 
         if self.orientation == "N":
-            self.position_y += 5
+            self.position_y += self.vitesse 
         
         if self.orientation == "S":
-            self.position_y -= 5
+            self.position_y -= self.vitesse 
         
         if self.orientation == "E":
-            self.position_x += 5
+            self.position_x += self.vitesse 
         
         if self.orientation == "W":
-            self.position_x -= 5
+            self.position_x -= self.vitesse 
 
     
     def arreter(self):
@@ -69,7 +71,6 @@ class Vehicule:
         if self.orientation == "W":
             self.orientation = "S"
 
-
     def tourner_droite (self):
 
         if self.orientation == "N":
@@ -83,4 +84,14 @@ class Vehicule:
         
         if self.orientation == "W":
             self.orientation = "N"
-    """
+    
+    def prochain_virage (self):
+
+        if (self.depart == "S" and self.arrivee == "N") or (self.depart == "N" and self.arrivee == "S") or (self.depart == "E" and self.arrivee == "W") or (self.depart == "W" and self.arrivee == "E"):
+            self.virage = "face"
+
+        if (self.depart == "S" and self.arrivee == "E") or (self.depart == "N" and self.arrivee == "W") or (self.depart == "E" and self.arrivee == "N") or (self.depart == "W" and self.arrivee == "S"):
+            self.virage = "droite"
+
+        if (self.depart == "S" and self.arrivee == "W") or (self.depart == "N" and self.arrivee == "E") or (self.depart == "E" and self.arrivee == "S") or (self.depart == "W" and self.arrivee == "N"):
+            self.virage = "gauche"

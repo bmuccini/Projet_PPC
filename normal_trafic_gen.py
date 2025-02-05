@@ -31,7 +31,8 @@ def generation_trafic_normal(queue_nord, queue_sud, queue_est, queue_ouest):
         arrivee = liste_direction[randint(0, 2)]
 
         vehicule = Vehicule(depart, arrivee, False)
-        message = pickle.dumps(vehicule)  # Sérialiser avec pickle
+
+        message = pickle.dumps(vehicule)  
 
         if depart == "N":
             queue_nord.send(message)
