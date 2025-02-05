@@ -26,15 +26,15 @@ def creation_files_messages():
         exit(1)
 
 def send_signal(direction):
-    """Envoie un signal à `programme_feu.py` pour donner la priorité à un véhicule prioritaire."""
+    """Envoie un signal à `lights.py` pour donner la priorité à un véhicule prioritaire."""
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(2)  # Timeout de 2 secondes
             s.connect(('localhost', SOCKET_PORT))
             s.sendall(f'PRIORITY:{direction}'.encode())
-            print(f"📢 Signal envoyé à programme_feu.py pour donner la priorité au feu {direction}")
+            print(f"📢 Signal envoyé à lights.py pour donner la priorité au feu {direction}")
     except ConnectionRefusedError:
-        print("⚠️ Erreur : programme_feu.py ne semble pas être en cours d'exécution.")
+        print("⚠️ Erreur : lights.py ne semble pas être en cours d'exécution.")
     except Exception as e:
         print(f"⚠️ Erreur inattendue : {e}")
 
