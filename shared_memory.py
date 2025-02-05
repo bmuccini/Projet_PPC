@@ -32,8 +32,6 @@ def create_shared_memory():
     except sysv_ipc.ExistentialError:
         shm = sysv_ipc.SharedMemory(SHM_KEY)
     return shm
-    
-   
 
 
 def get_shared_lights(shm):
