@@ -39,46 +39,8 @@ def send_update_to_display(lights, vehicules):
     except Exception as e:
         print(f"⚠️ Erreur de connexion avec `display.py` : {e}")
 
-
-"""
-def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
-    #Lit les véhicules des files de messages, les traite et envoie les mises à jour à `display.py`
-    while True:
-        vehicles = []  # Liste des véhicules traités à envoyer à `display.py`
-        shared_lights = get_shared_lights(shm)  # Lire l'état des feux
-        
-        # Lire l'état des feux depuis la mémoire partagée
-        # Les états des feux lus au début de chaque itération de la boucle pour utiliser toujours les dernières valeurs des feux
-        feu_nord = shared_lights["N"]
-        feu_sud = shared_lights["S"]
-        feu_est = shared_lights["E"]
-        feu_ouest = shared_lights["W"]
-
-        print(f"État des feux : N={feu_nord}, S={feu_sud}, E={feu_est}, W={feu_ouest}")
-
-        # Vérifier chaque file de message et traiter les véhicules
-        for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
-            try:
-                message, _ = queue.receive(block=False)
-                vehicule = pickle.loads(message)  
-                
-                feu_actuel = shared_lights[direction]  # Lire l'état du feu correspondant
-                
-                if feu_actuel == "vert":
-                    print(f"✅ Véhicule {direction} traité : {vehicule}")
-                    vehicles.append((vehicule.depart, vehicule.arrivee, vehicule.prioritaire))
-                else:
-                    print(f"🚦 Véhicule {direction} en attente : {vehicule}")
-            except sysv_ipc.BusyError:
-                pass
-
-                # 🛜 Envoyer les mises à jour à `display.py`
-        send_update_to_display(shm, vehicles)
-
-        time.sleep(1)
-"""
 ###Ce que j'ai fait###
-def gerer_traffic_2(queue_nord, queue_sud, queue_est, queue_ouest, shm):
+def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
     shared_lights = get_shared_lights(shm)
     liste_vehicules = list()
     
@@ -187,59 +149,6 @@ def verif_virage (vehicule):
 
         elif vehicule.prochain_virage == "droite":
              vehicule.tourner_droite()
-
-
-        
-
-    
-
-
-
-
-"""
-        try:
-            message_nord, _ = queue_nord.receive(block=False)
-            vehicule_nord = pickle.loads(message_nord)  # Désérialiser avec pickle
-            #feu_nord = shared_lights["N"]  # Lire l'état du feu dans la mémoire partagée
-            if feu_nord == "vert":
-                print(f"✅ Véhicule NORD traité : {vehicule_nord} (Feu {feu_nord})")
-            else:
-                print(f"🚦 Véhicule NORD en attente : {vehicule_nord} (Feu {feu_nord})")
-        except sysv_ipc.BusyError:
-            pass
-
-        try:
-            message_sud, _ = queue_sud.receive(block=False)
-            vehicule_sud = pickle.loads(message_sud)
-            #feu_sud = shared_lights["S"]  # Lire l'état du feu dans la mémoire partagée
-            if feu_sud == "vert":
-                print(f"✅ Véhicule SUD traité : {vehicule_sud} (Feu {feu_sud})")
-            else:
-                print(f"🚦 Véhicule SUD en attente : {vehicule_sud} (Feu {feu_sud})")
-        except sysv_ipc.BusyError:
-            pass
-
-        try:
-            message_est, _ = queue_est.receive(block=False)
-            vehicule_est = pickle.loads(message_est)
-            #feu_est = shared_lights["E"]  # Lire l'état du feu dans la mémoire partagée
-            if feu_est == "vert":
-                print(f"✅ Véhicule EST traité : {vehicule_est} (Feu {feu_est})")
-            else:
-                print(f"🚦 Véhicule EST en attente : {vehicule_est} (Feu {feu_est})")
-        except sysv_ipc.BusyError:
-            pass
-
-        try:
-            message_ouest, _ = queue_ouest.receive(block=False)
-            vehicule_ouest = pickle.loads(message_ouest)
-            #feu_ouest = shared_lights["W"]  # Lire l'état du feu dans la mémoire partagée
-            if feu_ouest == "vert":
-                print(f"✅ Véhicule OUEST traité : {vehicule_ouest} (Feu {feu_ouest})")
-            else:
-                print(f"🚦 Véhicule OUEST en attente : {vehicule_ouest} (Feu {feu_ouest})")
-        except sysv_ipc.BusyError:
-            pass"""
 
 
 if __name__ == "__main__":
