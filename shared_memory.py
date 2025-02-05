@@ -11,6 +11,7 @@ def create_shared_memory():
     })
     return shared_lights"""
 
+from Feu import Feu
 import sysv_ipc
 import pickle
 
@@ -19,22 +20,21 @@ SHM_KEY = 1234
 
 def create_shared_memory():
     """Crée ou se connecte à un segment de mémoire partagée avec sysv_ipc."""
+    feu_nord = Feu("N")
+    feu_sud = Feu("S")
+    feu_est = Feu("E")
+    feu_ouest = Feu("W")
+    
     try:
         shm = sysv_ipc.SharedMemory(SHM_KEY, sysv_ipc.IPC_CREX, size=4096)
-        initial_data = {"N": "rouge", "S": "rouge", "E": "vert", "W": "vert", "priorite": None}
+        initial_data = {"N": feu_nord , "S": feu_sud, "E": feu_est, "W": feu_ouest, "priorite": None}
         shm.write(pickle.dumps(initial_data))
     except sysv_ipc.ExistentialError:
         shm = sysv_ipc.SharedMemory(SHM_KEY)
     return shm
     
-    """# Initialiser les feux si c'est la première création
-    try:
-        initial_data = {"N": "rouge", "S": "rouge", "E": "vert", "W": "vert"}
-        shm.write(pickle.dumps(initial_data))
-    except sysv_ipc.ExistentialError:
-        pass
-    
-    return shm"""
+   
+
 
 def get_shared_lights(shm):
     """Lit les états des feux depuis la mémoire partagée."""

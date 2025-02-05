@@ -1,6 +1,7 @@
 import sysv_ipc
 import pickle
 from Vehicule import Vehicule
+from Feu import Feu
 import socket
 import time
 from shared_memory import create_shared_memory, get_shared_lights  # Importer la mémoire partagée
@@ -26,21 +27,22 @@ def ouvrir_files_messages():
         print("Erreur : Les files de messages n'existent pas.")
         exit(1)
 
-def send_update_to_display(shm, vehicles):
+def send_update_to_display(lights, vehicules):
     """Envoie l'état des feux et des véhicules à `display.py` via sockets."""
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect(("localhost", DISPLAY_PORT))
-            lights = get_shared_lights(shm)  # Récupère l'état des feux depuis la mémoire partagée
-            data = {"lights": lights, "vehicles": vehicles}
+            data = {"lights": lights, "vehicles": vehicules}
             s.sendall(pickle.dumps(data))
     except ConnectionRefusedError:
         print("⚠️ `display.py` n'est pas en cours d'exécution.")
     except Exception as e:
         print(f"⚠️ Erreur de connexion avec `display.py` : {e}")
 
+
+"""
 def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
-    """Lit les véhicules des files de messages, les traite et envoie les mises à jour à `display.py`."""
+    #Lit les véhicules des files de messages, les traite et envoie les mises à jour à `display.py`
     while True:
         vehicles = []  # Liste des véhicules traités à envoyer à `display.py`
         shared_lights = get_shared_lights(shm)  # Lire l'état des feux
@@ -74,10 +76,11 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
         send_update_to_display(shm, vehicles)
 
         time.sleep(1)
-
+"""
 ###Ce que j'ai fait###
 def gerer_traffic_2(queue_nord, queue_sud, queue_est, queue_ouest, shm):
     shared_lights = get_shared_lights(shm)
+    liste_vehicules = list()
     
     for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
         feu = shared_lights[direction]
@@ -110,14 +113,16 @@ def gerer_traffic_2(queue_nord, queue_sud, queue_est, queue_ouest, shm):
                 verif_virage (vehicule)
                 vehicule.avancer()
 
+            liste_vehicules.append(vehicule)
 
+    send_update_to_display(shared_lights, liste_vehicules)
 
 def verif_feu (vehicule, feu) :
 
     difference_position_x = abs(vehicule.position_x - feu.position_x)
     difference_position_y = abs(vehicule.position_y - feu.position_y)
 
-    if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != feu.orientation:
+    if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != feu.orientation: #coordonnées à changer
         return True
     
     else :
@@ -132,7 +137,7 @@ def verif_vehicule_devant (vehicule, queue) :
             difference_position_x = abs(vehicule.position_x - vehicule_devant.position_x)
             difference_position_y = abs(vehicule.position_y - vehicule_devant.position_y)
 
-            if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation == vehicule_devant.orientation:
+            if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation == vehicule_devant.orientation: #coordonnées à changer
                 return True 
             
     return False
@@ -151,7 +156,7 @@ def verif_priorite_droite (vehicule, queue_face):
                 difference_position_x = abs(vehicule.position_x - vehicule_face.position_x)
                 difference_position_y = abs(vehicule.position_y - vehicule_face.position_y)
 
-                if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != vehicule_face.orientation:
+                if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != vehicule_face.orientation: #coordonnées à changer
                     
                     if vehicule_face.prochain_virage == "face" or vehicule_face.prochain_virage == "droite" :
                         return True
