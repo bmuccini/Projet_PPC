@@ -11,7 +11,7 @@ class Vehicule:
             self.vitesse = 50
         
         self.positionnement_vehicule()
-        self.prochain_virage()
+
 
     def __repr__(self):
         return f"Véhicule({self.depart}->{self.arrivee}, prioritaire={self.prioritaire}), coords=({self.position_x}, {self.position_y})"
