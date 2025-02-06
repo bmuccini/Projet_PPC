@@ -12,8 +12,6 @@ KEY_SUD = 1001
 KEY_EST = 1002
 KEY_OUEST = 1003
 
-
-
 def ouvrir_files_messages():
     """Ouvre les files de messages System V."""
     try:
@@ -42,48 +40,67 @@ def send_update_to_display(lights, vehicules):
     except Exception as e:
         print(f"⚠️ Erreur de connexion avec `display.py` : {e}")
 
-###Ce que j'ai fait###
+
 def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
     shared_lights = get_shared_lights(shm)
-    liste_vehicules = list()
-    
+    liste_vehicules = []
+
     for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
         feu = shared_lights[direction]
 
-        while queue.current_messages == 0:
-            message, _ = queue.receive()
-            vehicule : Vehicule = (pickle.loads(message))  # Pour desérialiser l'objet vehicule
+        messages_temp = []  # Stockage temporaire des véhicules
 
-            if verif_vehicule_devant(vehicule, queue) :
-                vehicule.arreter()
-            
-            elif feu.couleur == "rouge":
-                if verif_feu (vehicule, feu) :
+        while True:
+            try:
+                message, _ = queue.receive(block=False)  # Lire sans bloquer
+                vehicule : Vehicule = pickle.loads(message)
+
+                # 🚦 Gestion du trafic
+                if verif_vehicule_devant(vehicule, queue):
                     vehicule.arreter()
-
-            elif  (-100 < vehicule.position_x < 100) and (-100 < vehicule.position_y < 100) : #coordonnées à modifier
-                if direction == "N" :
-                    queue_face = queue_sud
-                elif direction == "S" :
-                    queue_face = queue_nord
-                elif direction == "E" :
-                    queue_face = queue_ouest
-                else :
-                    queue_face = queue_est
                 
-                if verif_priorite_droite (vehicule, queue_face):
+                elif feu.couleur == "rouge" and verif_feu(vehicule, feu):
                     vehicule.arreter()
-            
-            else :
-                verif_virage (vehicule)
-                        
 
+                elif -100 < vehicule.position_x < 100 and -100 < vehicule.position_y < 100:  # Dans le carrefour
+                    if direction == "N" :
+                        queue_face = queue_sud
+                    elif direction == "S" :
+                        queue_face = queue_nord
+                    elif direction == "E" :
+                        queue_face = queue_ouest
+                    else :
+                        queue_face = queue_est
 
-                vehicule.avancer()
+                    if verif_priorite_droite(vehicule, queue_face):
+                        vehicule.arreter()
+                    elif verif_virage(vehicule):
+                        if vehicule.prochain_virage == "gauche":
+                            vehicule.tourner_gauche()
+                        elif vehicule.prochain_virage == "droite":
+                            vehicule.tourner_droite()
+                        vehicule.avancer()
+                else:
+                    vehicule.avancer()
 
+                # 🚗 Ajouter le véhicule dans la liste s'il est toujours dans la simulation
+                if not verif_sortie_display(vehicule):
+                    messages_temp.append(vehicule)
+
+            except sysv_ipc.BusyError:
+                break  # La file est vide, on arrête la boucle
+
+        # 📨 Réinsérer les véhicules dans la file
+        for vehicule in messages_temp:
+            queue.send(pickle.dumps(vehicule))
             liste_vehicules.append(vehicule)
 
+    print('proutiflex')
+
+    # 📡 Mise à jour de l'affichage
     send_update_to_display(shared_lights, liste_vehicules)
+
+
 
 def verif_feu (vehicule, feu) :
 
@@ -97,18 +114,28 @@ def verif_feu (vehicule, feu) :
         return False
 
 def verif_vehicule_devant (vehicule, queue) :
-    while queue.current_messages == 0:
-        message, _ = queue.receive()
-        vehicule_devant = (pickle.loads(message))
+    messages_temp = []
+    while True:
+        try:
+            message, _ = queue.receive(block=False)  # Lire sans bloquer
+            vehicule_devant = (pickle.loads(message))
 
-        if vehicule_devant != vehicule :
-            difference_position_x = abs(vehicule.position_x - vehicule_devant.position_x)
-            difference_position_y = abs(vehicule.position_y - vehicule_devant.position_y)
+            messages_temp.append(vehicule)
 
-            if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation == vehicule_devant.orientation: #coordonnées à changer
-                return True 
+            if vehicule_devant != vehicule :
+                difference_position_x = abs(vehicule.position_x - vehicule_devant.position_x)
+                difference_position_y = abs(vehicule.position_y - vehicule_devant.position_y)
+
+                if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation == vehicule_devant.orientation: #coordonnées à changer
+                    return True 
+
+        except sysv_ipc.BusyError:
+                break  # La file est vide, on arrête la boucle
+
+    for vehicule in messages_temp:
+            queue.send(pickle.dumps(vehicule))
             
-    return False
+        
 
 
 def verif_priorite_droite (vehicule, queue_face):
@@ -174,10 +201,10 @@ def verif_virage (vehicule):
 def verif_sortie_display (vehicule):
 
     if ( 0 <= vehicule.position_x <= 1200 ) and ( 0 <= vehicule.position_y <= 800 ):
-        return True
+        return False
     
     else : 
-        return False
+        return True
 
 
 
