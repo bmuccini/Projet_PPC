@@ -40,76 +40,99 @@ class TrafficLight:
         threading.Thread(target=listener, daemon=True).start()
 
     def run_cycle(self):
+        """Main loop that runs forever, handling priority vs normal cycles."""
         while True:
             if self.priority_event.is_set():
-                # Phase prioritaire (4s vert + 1s rouge)
                 self._handle_priority()
             else:
-                # Cycle normal
                 self.normal_cycle()
-            
-            
 
     def _handle_priority(self):
-        """Gère l'activation des feux prioritaires."""
-        # Feu prioritaire vert
-        self.feux = get_shared_lights(shm= self.shm)
-        
-        for feu in self.feux.values() :
+        """Handles the 'priority' phase (e.g. ambulance) by making the chosen direction green."""
+        self.feux = get_shared_lights(shm=self.shm)
+
+        # Set all lights red
+        for feu in self.feux.values():
             feu.rouge()
 
+        # The priority direction turns green
         self.feux[self.priority_direction].vert()
 
+        # Update shared memory
         set_shared_lights(self.shm, self.feux)
         print(f"🚨 FEU {self.priority_direction} VERT (5s)")
         time.sleep(5)
 
-        #Tous les feux rouges
-        for feu in self.feux.values() :
+        # Turn all lights red again
+        for feu in self.feux.values():
             feu.rouge()
         set_shared_lights(self.shm, self.feux)
         print("🔴 Tous les feux rouges (1s)")
         time.sleep(1)
 
+        # Clear the event so future normal cycles can proceed
         self.priority_event.clear()
 
     def normal_cycle(self):
-
+        """Runs the standard traffic light cycle, but breaks early if priority_event is set."""
+        # Step 1: North & South = green, East & West = red
         self.feu_N.vert()
         self.feu_S.vert()
         self.feu_E.rouge()
         self.feu_W.rouge()
         feux = {"N": self.feu_N, "S": self.feu_S, "E": self.feu_E, "W": self.feu_W}
         set_shared_lights(self.shm, feux)
-        print (f"Feux verts Nord et Sud")
-        time.sleep (5)
+        print("Feux verts Nord et Sud")
+        self.wait_with_priority_check(5)
+        if self.priority_event.is_set():
+            return  # Stop normal cycle if priority is triggered
 
+        # Step 2: All red
         self.feu_N.rouge()
         self.feu_S.rouge()
         self.feu_E.rouge()
         self.feu_W.rouge()
         feux = {"N": self.feu_N, "S": self.feu_S, "E": self.feu_E, "W": self.feu_W}
         set_shared_lights(self.shm, feux)
-        print(f"Tous les feux sont rouges")
-        time.sleep (2)
+        print("Tous les feux sont rouges")
+        self.wait_with_priority_check(1)
+        if self.priority_event.is_set():
+            return
 
+        # Step 3: East & West = green, North & South = red
         self.feu_N.rouge()
         self.feu_S.rouge()
         self.feu_E.vert()
         self.feu_W.vert()
         feux = {"N": self.feu_N, "S": self.feu_S, "E": self.feu_E, "W": self.feu_W}
         set_shared_lights(self.shm, feux)
-        print (f"Feux verts Est et Ouest")
-        time.sleep (5)
+        print("Feux verts Est et Ouest")
+        self.wait_with_priority_check(5)
+        if self.priority_event.is_set():
+            return
 
+        # Step 4: All red again
         self.feu_N.rouge()
         self.feu_S.rouge()
         self.feu_E.rouge()
         self.feu_W.rouge()
         feux = {"N": self.feu_N, "S": self.feu_S, "E": self.feu_E, "W": self.feu_W}
         set_shared_lights(self.shm, feux)
-        print(f"Tous les feux sont rouges")
-        time.sleep (2)
+        print("Tous les feux sont rouges")
+        self.wait_with_priority_check(1)
+        if self.priority_event.is_set():
+            return
+
+    def wait_with_priority_check(self, duration, check_interval=0.1):
+        """
+        Sleeps for `duration` seconds, but checks `self.priority_event`
+        every `check_interval` seconds to break early if needed.
+        """
+        end_time = time.time() + duration
+        while time.time() < end_time:
+            if self.priority_event.is_set():
+                return  # Abort immediately if we have priority
+            time.sleep(check_interval)
 
 
 if __name__ == "__main__":

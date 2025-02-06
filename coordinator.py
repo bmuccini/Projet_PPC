@@ -59,7 +59,7 @@ def recuperer_vehicules(queues):
 def gerer_trafic():
     shared_lights = get_shared_lights(shm)
     for vehicule in liste_vehicules:
-        if not doit_arreter_au_feu(vehicule) and not doit_arreter_derriere_vehicule(vehicule):
+        if not doit_arreter_au_feu(vehicule) and not doit_arreter_derriere_vehicule(vehicule) or vehicule.prioritaire:
             vehicule.avancer()
             vehicule.tourner()
     supprimer_vehicules()

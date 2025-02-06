@@ -78,7 +78,7 @@ def generation_trafic_prioritaire(queue_nord, queue_sud, queue_est, queue_ouest)
             print(f"Véhicule Ouest ajouté : {vehicule}")
 
         send_signal(depart)
-        time.sleep(12)
+        time.sleep(15)
 
 
 
