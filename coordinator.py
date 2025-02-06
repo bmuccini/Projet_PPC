@@ -42,6 +42,13 @@ def send_update_to_display(lights, vehicules):
 ###Ce que j'ai fait###
 def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
     shared_lights = get_shared_lights(shm)
+    feu_nord = shared_lights["N"]
+    feu_sud = shared_lights["S"]
+    feu_est = shared_lights["E"]
+    feu_ouest = shared_lights["W"]
+    
+
+    print(f"État des feux : N={feu_nord}, S={feu_sud}, E={feu_est}, W={feu_ouest}")
     liste_vehicules = list()
     
     for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
