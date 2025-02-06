@@ -13,7 +13,6 @@ class TrafficLight:
         self.priority_event = threading.Event()
         self.priority_direction = None
         self._setup_socket_server()
-        #self.cycle_paused = False  # Flag pour gérer l'interruption
 
         self.feux = get_shared_lights(self.shm)
 
@@ -40,7 +39,7 @@ class TrafficLight:
         threading.Thread(target=listener, daemon=True).start()
 
     def run_cycle(self):
-        """Main loop that runs forever, handling priority vs normal cycles."""
+        """Boucle principale qui gère les cycles prioritaires et normaux"""
         while True:
             if self.priority_event.is_set():
                 self._handle_priority()
@@ -48,7 +47,7 @@ class TrafficLight:
                 self.normal_cycle()
 
     def _handle_priority(self):
-        """Handles the 'priority' phase (e.g. ambulance) by making the chosen direction green."""
+        """Gère la phase de priorité. Le feu associé devient vert"""
         self.feux = get_shared_lights(shm=self.shm)
 
         # Set all lights red
@@ -74,7 +73,7 @@ class TrafficLight:
         self.priority_event.clear()
 
     def normal_cycle(self):
-        """Runs the standard traffic light cycle, but breaks early if priority_event is set."""
+        """Run le cycle normal des feux et il s'arrète s'il arrive un evenement prioritaire"""
         # Step 1: North & South = green, East & West = red
         self.feu_N.vert()
         self.feu_S.vert()
@@ -124,10 +123,7 @@ class TrafficLight:
             return
 
     def wait_with_priority_check(self, duration, check_interval=0.1):
-        """
-        Sleeps for `duration` seconds, but checks `self.priority_event`
-        every `check_interval` seconds to break early if needed.
-        """
+        """Sleep pour une durée de `duration` secondes et vérifie que le `self.priority_event` à chaque every `check_interval`"""
         end_time = time.time() + duration
         while time.time() < end_time:
             if self.priority_event.is_set():

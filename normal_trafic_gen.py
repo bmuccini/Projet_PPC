@@ -50,9 +50,7 @@ def generation_trafic_normal(queue_nord, queue_sud, queue_est, queue_ouest):
         time.sleep(2)
 
 if __name__ == "__main__":
-    """
-    Point d'entrée du programme.
-    Crée les files de messages et commence la génération du trafic.
-    """
+    """Point d'entrée du programme.
+    Crée les files de messages et commence la génération du trafic."""
     queue_nord, queue_sud, queue_est, queue_ouest = creation_files_messages()
     generation_trafic_normal(queue_nord, queue_sud, queue_est, queue_ouest)

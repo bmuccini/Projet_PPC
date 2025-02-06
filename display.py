@@ -8,7 +8,6 @@ from Vehicule import Vehicule
 pygame.init()
 
 # Dimensions de la fenêtre
-
 WIDTH, HEIGHT = 1200, 800
 
 WHITE = (255, 255, 255)
@@ -31,7 +30,6 @@ CROSSROAD_Y = HEIGHT // 2 - ROAD_WIDTH // 2
 class Display() : 
 
     def __init__(self):
-        #pygame.init()
         self.width = 1200
         self.height = 800
         self.screen = pygame.display.set_mode((self.width, self.height))
@@ -81,14 +79,12 @@ class Display() :
 
     # Fonction pour dessiner les feux
     def draw_lights(self):
-
         
         if not self.feux:  # pour éviter les erreurs quand aucun feu n'est disponible
             return
         
         for key, feu in self.feux.items() :
             feu : Feu
-
             
             if feu is None:  # Éviter les erreurs si un feu est `None`
                 #print(f"⚠️ WARNING: Le feu {key} est None et ne peut pas être dessiné.")

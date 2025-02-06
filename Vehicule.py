@@ -53,49 +53,6 @@ class Vehicule:
         if self.orientation == "W":
             self.position_x -= self.vitesse 
 
-    
-    def arreter(self):
-        pass
-
-    def tourner_gauche (self):
-
-        if self.orientation == "N":
-            self.orientation = "W"
-        
-        if self.orientation == "S":
-            self.orientation = "E"
-        
-        if self.orientation == "E":
-            self.orientation = "N"
-        
-        if self.orientation == "W":
-            self.orientation = "S"
-
-    def tourner_droite (self):
-
-        if self.orientation == "N":
-            self.orientation = "E"
-        
-        if self.orientation == "S":
-            self.orientation = "W"
-        
-        if self.orientation == "E":
-            self.orientation = "S"
-        
-        if self.orientation == "W":
-            self.orientation = "N"
-    
-    def prochain_virage (self):
-
-        if (self.depart == "S" and self.arrivee == "N") or (self.depart == "N" and self.arrivee == "S") or (self.depart == "E" and self.arrivee == "W") or (self.depart == "W" and self.arrivee == "E"):
-            self.virage = "face"
-
-        if (self.depart == "S" and self.arrivee == "E") or (self.depart == "N" and self.arrivee == "W") or (self.depart == "E" and self.arrivee == "N") or (self.depart == "W" and self.arrivee == "S"):
-            self.virage = "droite"
-
-        if (self.depart == "S" and self.arrivee == "W") or (self.depart == "N" and self.arrivee == "E") or (self.depart == "E" and self.arrivee == "S") or (self.depart == "W" and self.arrivee == "N"):
-            self.virage = "gauche"
-
     def tourner(self):
         if self.arrivee == "N":
             if 610 < self.position_x < 690:
