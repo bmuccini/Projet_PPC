@@ -63,6 +63,3 @@ def update_shared_lights(shm, key, new_value):
 if __name__ == "__main__":
     shm = create_shared_memory()
     print("Shared memory created !")
-    while True :
-        print(get_shared_lights(shm))
-        time.sleep(2)
