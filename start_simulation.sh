@@ -6,7 +6,7 @@ echo "Démarrage de la simulation du carrefour..."
 python3 display.py &
 DISPLAY_PID=$!
 
-#sleep 1
+sleep 3
 
 python3 lights.py &
 LIGHTS_PID=$!

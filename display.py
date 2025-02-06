@@ -62,19 +62,25 @@ class Display() :
                 s.listen()
                 print("🖥️ `display.py` en attente des mises à jour...")
                 while True:
-                    conn, _ = s.accept()
-                    with conn:
-                        data = conn.recv(4096)
-                        if data:
-                            update = pickle.loads(data)
-                        
-                            self.feux = update["lights"]
-                            self.liste_vehicules = update["vehicules"]
+                    try:
+                        conn, _ = s.accept()
+                        with conn:
+                            data = conn.recv(4096)
+                            if data:
+                                update = pickle.loads(data)
+                            
+                                self.feux = update["lights"]
+                                self.liste_vehicules = update["vehicules"]
+                    except Exception as e:
+                        print(f"Erreur de réception de données: {e}")
 
         threading.Thread(target=listener, daemon=True).start()
 
     # Fonction pour dessiner les feux
     def draw_lights(self):
+
+        if not self.feux:  # pour éviter les erreurs quand aucun feu n'est disponible
+            return
         
         for feu in self.feux.values() :
             if feu.couleur == "vert":
@@ -86,6 +92,9 @@ class Display() :
 
     # Fonction pour dessiner les véhicules
     def draw_vehicles(self):
+           if not self.liste_vehicules:  # pour éviter les erreurs quand aucun véhicule n'est disponible
+               return
+           
            for vehicule in self.liste_vehicules :
 
             if vehicule.prioritaire == True :
@@ -119,6 +128,7 @@ while running:
     # Mets à jour l'affichage
     pygame.display.flip()
     pygame.time.delay(30)  # Rafraîchissement à 30 FPS
+    pygame.time.wait(50)
 
 # Quitte Pygame
 pygame.quit()
