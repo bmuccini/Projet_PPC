@@ -51,7 +51,8 @@ class TrafficLight:
     def _handle_priority(self):
         """Gère l'activation des feux prioritaires."""
         # Feu prioritaire vert
-
+        self.feux = get_shared_lights(shm= self.shm)
+        
         for feu in self.feux.values() :
             feu.rouge()
 

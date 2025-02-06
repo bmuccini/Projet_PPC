@@ -45,11 +45,6 @@ def send_update_to_display(lights, vehicules):
 ###Ce que j'ai fait###
 def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
     shared_lights = get_shared_lights(shm)
-    
-    message, _ = queue_nord.receive()
-    vehicule : Vehicule = (pickle.loads(message))
-    print(vehicule.prioritaire)
-    
     liste_vehicules = list()
     
     for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
