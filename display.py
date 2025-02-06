@@ -2,6 +2,8 @@ import pygame
 import socket
 import threading
 import pickle
+from Feu import Feu
+from Vehicule import Vehicule
 
 # Dimensions de la fenêtre
 

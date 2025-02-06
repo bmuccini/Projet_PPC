@@ -25,6 +25,19 @@ def creation_files_messages():
         print("Erreur : Les files de messages existent déjà.")
         exit(1)
 
+def ouvrir_files_messages():
+    """Ouvre les files de messages System V."""
+    try:
+        queue_nord = sysv_ipc.MessageQueue(KEY_NORD)
+        queue_sud = sysv_ipc.MessageQueue(KEY_SUD)
+        queue_est = sysv_ipc.MessageQueue(KEY_EST)
+        queue_ouest = sysv_ipc.MessageQueue(KEY_OUEST)
+
+        return queue_nord, queue_sud, queue_est, queue_ouest
+    except sysv_ipc.ExistentialError:
+        print("Erreur : Les files de messages n'existent pas.")
+        exit(1)
+
 def send_signal(direction):
     """Envoie un signal à `lights.py` pour donner la priorité à un véhicule prioritaire."""
     try:
@@ -71,6 +84,6 @@ def generation_trafic_prioritaire(queue_nord, queue_sud, queue_est, queue_ouest)
 
 if __name__ == "__main__":
  
-    queue_nord, queue_sud, queue_est, queue_ouest = creation_files_messages()
+    queue_nord, queue_sud, queue_est, queue_ouest = ouvrir_files_messages()
     generation_trafic_prioritaire(queue_nord, queue_sud, queue_est, queue_ouest)
 
