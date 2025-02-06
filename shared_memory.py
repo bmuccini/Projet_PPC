@@ -1,3 +1,4 @@
+import time
 from Feu import Feu
 import sysv_ipc
 import pickle
@@ -58,3 +59,10 @@ def update_shared_lights(shm, key, new_value):
     lights = get_shared_lights(shm)
     lights[key] = new_value
     set_shared_lights(shm, lights)
+
+if __name__ == "__main__":
+    shm = create_shared_memory()
+    print("Shared memory created !")
+    while True :
+        print(get_shared_lights(shm))
+        time.sleep(2)

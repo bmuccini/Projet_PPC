@@ -2,7 +2,11 @@
 
 echo "Démarrage de la simulation du carrefour..."
 
+python shared_memory.py & DISPLAY_PID=$!
+
+sleep 1
 # Exécuter les processus en arrière-plan (& permet de ne pas bloquer le terminal)
+
 python3 display.py &
 DISPLAY_PID=$!
 

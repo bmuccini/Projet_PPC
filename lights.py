@@ -3,13 +3,13 @@ import time
 import sysv_ipc
 import threading
 import socket
-from shared_memory import create_shared_memory, get_shared_lights, set_shared_lights
+from shared_memory import connect_to_shared_memory, get_shared_lights, set_shared_lights
 
 SOCKET_PORT = 65432
 
 class TrafficLight:
     def __init__(self):
-        self.shm = create_shared_memory()
+        self.shm = connect_to_shared_memory()
         self.priority_event = threading.Event()
         self.priority_direction = None
         self._setup_socket_server()
