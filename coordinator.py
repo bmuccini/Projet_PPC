@@ -59,7 +59,7 @@ def recuperer_vehicules(queues):
 def gerer_trafic():
     shared_lights = get_shared_lights(shm)
     for vehicule in liste_vehicules:
-        if not doit_arreter_au_feu(vehicule):
+        if not doit_arreter_au_feu(vehicule) and not doit_arreter_derriere_vehicule(vehicule):
             vehicule.avancer()
     supprimer_vehicules()
     #print(liste_vehicules)
@@ -166,6 +166,13 @@ def doit_arreter_au_feu(vehicule : Vehicule):
         else:
             return False
 
+def doit_arreter_derriere_vehicule(vehicule : Vehicule):
+    for v in liste_vehicules:
+        if v == vehicule:
+            continue
+        return vehicule.doit_arreter_derriere(v)
+            
+
 def verif_vehicule_devant (vehicule : Vehicule, queue) :
     messages_temp = []
     vehicule_devant = False
@@ -269,7 +276,6 @@ def vehicule_est_sorti(vehicule):
     return vehicule.position_x < 0 or vehicule.position_x > 1200 or vehicule.position_y < 0 or vehicule.position_y > 800
 
 
-
 if __name__ == "__main__":
     shm = connect_to_shared_memory() # Mémoire partagée commune
     #shared_lights = create_shared_memory()  # Initialisation mémoire partagée
@@ -279,4 +285,4 @@ if __name__ == "__main__":
     while True: 
         recuperer_vehicules(queues= queues)
         gerer_trafic()
-        time.sleep(1)
+        time.sleep(0.4)

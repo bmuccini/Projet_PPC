@@ -105,3 +105,21 @@ class Vehicule:
             return 710 < self.position_x < 780
         if self.depart == "W":
             return 400 < self.position_x < 470
+    
+    def doit_arreter_derriere(self, vehicule):
+        if self.depart != vehicule.depart:
+            return False
+        
+        if self.depart == "N":
+            distance = vehicule.position_y - self.position_y
+            return 0 < distance <= self.vitesse + 10
+        if self.depart == "S":
+            distance = self.position_y - vehicule.position_y
+            return 0 < distance <= self.vitesse + 10
+        if self.depart == "E":
+            distance = self.position_x - vehicule.position_x
+            return 0 < distance <= self.vitesse + 10
+        if self.depart == "W":
+            distance = vehicule.position_x - self.position_x
+            return 0 < distance <= self.vitesse + 10
+        
