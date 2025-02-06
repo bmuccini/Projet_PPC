@@ -59,8 +59,8 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
     
         try:
             message, _ = queue.receive()  # Lire sans bloquer
-            vehicule : Vehicule = pickle.loads(message)
-
+            vehicule = pickle.loads(message)
+            # print(f"Le coordinator a reçu le vehicule :", vehicule.position_x, vehicule.position_y)
             # 🚦 Gestion du trafic
             if verif_vehicule_devant(vehicule, queue):
                 vehicule.arreter()
@@ -113,7 +113,7 @@ def verif_feu (vehicule, feu) :
     difference_position_x = abs(vehicule.position_x - feu.position_x)
     difference_position_y = abs(vehicule.position_y - feu.position_y)
 
-    if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != feu.orientation: #coordonnées à changer
+    if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != feu.direction: #coordonnées à changer
         return True
     
     else :
