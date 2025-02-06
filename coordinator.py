@@ -4,13 +4,16 @@ from Vehicule import Vehicule
 from Feu import Feu
 import socket
 import time
-from shared_memory import create_shared_memory, get_shared_lights, connect_to_shared_memory  # Importer la mémoire partagée
+from shared_memory import  get_shared_lights, connect_to_shared_memory  # Importer la mémoire partagée
 
 # Clés pour les files de messages
 KEY_NORD = 1000
 KEY_SUD = 1001
 KEY_EST = 1002
 KEY_OUEST = 1003
+
+liste_vehicules = []
+shm = connect_to_shared_memory()
 
 def ouvrir_files_messages():
     """Ouvre les files de messages System V."""
@@ -42,80 +45,106 @@ def send_update_to_display(lights, vehicules):
     except Exception as e:
         print(f"⚠️ Erreur de connexion avec `display.py` : {e}")
 
-
-def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
-    shared_lights = get_shared_lights(shm)
-    """
-    for feu in shared_lights.values():
-        print(feu.couleur)
-    """
-    liste_vehicules = []
-
-    for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
-        feu = shared_lights[direction]
-        """feu_nord = shared_lights["N"]
-            feu_sud = shared_lights["S"]
-            feu_est = shared_lights["E"]
-            feu_ouest = shared_lights["W"]
-            print(f"Etat des feux : N={feu_nord}, S={feu_sud}, E={feu_est}, W={feu_ouest})"""
-
-        messages_temp = []  # Stockage temporaire des véhicules
-
+def recuperer_vehicules(queues):
+    for queue in queues:
         try:
-            message, _ = queue.receive()  # Lire sans bloquer
+            message, _ = queue.receive(block = False)
             vehicule = pickle.loads(message)
-            #print(f"Le coordinator a reçu le vehicule :", vehicule)
-            # 🚦 Gestion du trafic
-            if verif_vehicule_devant(vehicule, queue):
-                vehicule.arreter()
-            
-            elif feu.couleur == "rouge" and verif_feu(vehicule, feu):
-                vehicule.arreter()
-
-            elif -100 < vehicule.position_x < 100 and -100 < vehicule.position_y < 100:  # Dans le carrefour
-                if direction == "N" :
-                    queue_face = queue_sud
-                elif direction == "S" :
-                    queue_face = queue_nord
-                elif direction == "E" :
-                    queue_face = queue_ouest
-                else :
-                    queue_face = queue_est
-
-                if verif_priorite_droite(vehicule, queue_face):
-                    print(vehicule, "STOP !!!")
-                    vehicule.arreter()
-                elif verif_virage(vehicule):
-                    if vehicule.prochain_virage == "gauche":
-                        vehicule.tourner_gauche()
-                    elif vehicule.prochain_virage == "droite":
-                        vehicule.tourner_droite()
-                    vehicule.avancer()
-                    print(vehicule, "avance")
-            else:
-                vehicule.avancer()
-                print(vehicule, "avance")
-
-            # 🚗 Ajouter le véhicule dans la liste s'il est toujours dans la simulation
-            if not verif_sortie_display(vehicule):
-                messages_temp.append(vehicule)
-
-            print("Nouvelles coordonnées du vehicule : ", vehicule)
-        except sysv_ipc.BusyError:
-            break  # La file est vide, on arrête la boucle
-
-        # 📨 Réinsérer les véhicules dans la file
-        for vehicule in messages_temp:
-            queue.send(pickle.dumps(vehicule))
             liste_vehicules.append(vehicule)
+            #print(f"Vehicules ajoutés :", liste_vehicules)
+        except sysv_ipc.BusyError:
+            #print("No messages available. Skipping...")
+            pass
 
-    #print("proutiflex")
-    # 📡 Mise à jour de l'affichage
+def gerer_trafic():
+    shared_lights = get_shared_lights(shm)
+    for vehicule in liste_vehicules:
+        vehicule.avancer()
+    supprimer_vehicules()
+    print(liste_vehicules)
     send_update_to_display(shared_lights, liste_vehicules)
 
+def supprimer_vehicules():
+    liste_vehicules[:] = [vehicule for vehicule in liste_vehicules if not vehicule_est_sorti(vehicule)]
 
 
-def verif_feu (vehicule: Vehicule, feu : Feu) :
+
+
+# def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
+#     shared_lights = get_shared_lights(shm)
+#     """
+#     for feu in shared_lights.values():
+#         print(feu.couleur)
+#     """
+#     liste_vehicules = []
+
+#     for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
+#         feu = shared_lights[direction]
+#         """feu_nord = shared_lights["N"]
+#             feu_sud = shared_lights["S"]
+#             feu_est = shared_lights["E"]
+#             feu_ouest = shared_lights["W"]
+#             print(f"Etat des feux : N={feu_nord}, S={feu_sud}, E={feu_est}, W={feu_ouest})"""
+
+#         messages_temp = []  # Stockage temporaire des véhicules
+
+#         try:
+#             message, _ = queue.receive()  # Lire sans bloquer
+#             vehicule = pickle.loads(message)
+#             #print(f"Le coordinator a reçu le vehicule :", vehicule)
+#             # 🚦 Gestion du trafic
+#             """ if verif_vehicule_devant(vehicule, queue):
+#                 vehicule.arreter()
+            
+#             elif feu.couleur == "rouge" and verif_feu(vehicule, feu):
+#                 vehicule.arreter()
+
+#             elif -100 < vehicule.position_x < 100 and -100 < vehicule.position_y < 100:  # Dans le carrefour
+#                 if direction == "N" :
+#                     queue_face = queue_sud
+#                 elif direction == "S" :
+#                     queue_face = queue_nord
+#                 elif direction == "E" :
+#                     queue_face = queue_ouest
+#                 else :
+#                     queue_face = queue_est
+
+#                 if verif_priorite_droite(vehicule, queue_face):
+#                     print(vehicule, "STOP !!!")
+#                     vehicule.arreter()
+#                 elif verif_virage(vehicule):
+#                     if vehicule.prochain_virage == "gauche":
+#                         vehicule.tourner_gauche()
+#                     elif vehicule.prochain_virage == "droite":
+#                         vehicule.tourner_droite()
+#                     vehicule.avancer()
+#                     print(vehicule, "avance")
+#             else:
+#                 vehicule.avancer()
+#                 print(vehicule, "avance")"""
+
+#             # 🚗 Ajouter le véhicule dans la liste s'il est toujours dans la simulation
+#             #if not verif_sortie_display(vehicule):
+#             messages_temp.append(vehicule)
+#             print(f"Liste des véhicules :", messages_temp)
+#             vehicule.avancer()
+
+#             print("Nouvelles coordonnées du vehicule : ", vehicule)
+#         except sysv_ipc.BusyError:
+#             break  # La file est vide, on arrête la boucle
+
+#         # 📨 Réinsérer les véhicules dans la file
+#         for vehicule in messages_temp:
+#             queue.send(pickle.dumps(vehicule))
+#             liste_vehicules.append(vehicule)
+
+#     #print("proutiflex")
+#     # 📡 Mise à jour de l'affichage
+#     send_update_to_display(shared_lights, liste_vehicules)
+
+
+
+def verif_feu(vehicule: Vehicule, feu : Feu) :
 
     difference_position_x = abs(vehicule.position_x - feu.position_x)
     difference_position_y = abs(vehicule.position_y - feu.position_y)
@@ -225,13 +254,8 @@ def verif_virage (vehicule : Vehicule):
         return False
 
 
-def verif_sortie_display (vehicule):
-
-    if ( 0 <= vehicule.position_x <= 1200 ) and ( 0 <= vehicule.position_y <= 800 ):
-        return False
-    
-    else : 
-        return True
+def vehicule_est_sorti(vehicule):
+    return vehicule.position_x < 0 or vehicule.position_x > 1200 or vehicule.position_y < 0 or vehicule.position_y > 800
 
 
 
@@ -239,7 +263,9 @@ if __name__ == "__main__":
     shm = connect_to_shared_memory() # Mémoire partagée commune
     #shared_lights = create_shared_memory()  # Initialisation mémoire partagée
     
+    queue_nord, queue_sud, queue_est, queue_ouest = ouvrir_files_messages()  # Ouverture files de messages
+    queues = [queue_sud, queue_nord, queue_est, queue_ouest]
     while True: 
-        queue_nord, queue_sud, queue_est, queue_ouest = ouvrir_files_messages()  # Ouverture files de messages
-        gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm)  # Démarrage gestion du trafic
-        time.sleep(1)
+        recuperer_vehicules(queues= queues)
+        gerer_trafic()
+        time.sleep(2)

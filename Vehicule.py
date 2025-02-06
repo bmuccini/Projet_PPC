@@ -6,9 +6,9 @@ class Vehicule:
         self.prioritaire = prioritaire
         
         if prioritaire :
-            self.vitesse = 10
+            self.vitesse = 100
         else :
-            self.vitesse = 5
+            self.vitesse = 80
         
         self.positionnement_vehicule()
         self.prochain_virage()
