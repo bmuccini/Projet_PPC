@@ -31,4 +31,4 @@ class Feu:
         self.couleur = "vert"
 
     def __str__(self):
-        print("Feu ", self.direction, ":", self.couleur)
+        return self.couleur
