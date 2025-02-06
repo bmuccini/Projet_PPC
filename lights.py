@@ -59,13 +59,13 @@ class TrafficLight:
 
         set_shared_lights(self.shm, self.feux)
         print(f"🚨 FEU {self.priority_direction} VERT (5s)")
-        time.sleep(4)
+        time.sleep(5)
 
         #Tous les feux rouges
         for feu in self.feux.values() :
             feu.rouge()
         set_shared_lights(self.shm, self.feux)
-        print("🔴 Tous les feux rouges (2s)")
+        print("🔴 Tous les feux rouges (1s)")
         time.sleep(1)
 
         self.priority_event.clear()
@@ -78,6 +78,7 @@ class TrafficLight:
         self.feu_W.rouge()
         feux = {"N": self.feu_N, "S": self.feu_S, "E": self.feu_E, "W": self.feu_W}
         set_shared_lights(self.shm, feux)
+        print (f"Feux verts Nord et Sud")
         time.sleep (5)
 
         self.feu_N.rouge()
@@ -86,6 +87,7 @@ class TrafficLight:
         self.feu_W.rouge()
         feux = {"N": self.feu_N, "S": self.feu_S, "E": self.feu_E, "W": self.feu_W}
         set_shared_lights(self.shm, feux)
+        print(f"Tous les feux sont rouges")
         time.sleep (2)
 
         self.feu_N.rouge()
@@ -94,6 +96,7 @@ class TrafficLight:
         self.feu_W.vert()
         feux = {"N": self.feu_N, "S": self.feu_S, "E": self.feu_E, "W": self.feu_W}
         set_shared_lights(self.shm, feux)
+        print (f"Feux verts Est et Ouest")
         time.sleep (5)
 
         self.feu_N.rouge()
@@ -102,6 +105,7 @@ class TrafficLight:
         self.feu_W.rouge()
         feux = {"N": self.feu_N, "S": self.feu_S, "E": self.feu_E, "W": self.feu_W}
         set_shared_lights(self.shm, feux)
+        print(f"Tous les feux sont rouges")
         time.sleep (2)
 
 

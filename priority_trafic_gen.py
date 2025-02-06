@@ -49,7 +49,7 @@ def generation_trafic_prioritaire(queue_nord, queue_sud, queue_est, queue_ouest)
 
         vehicule = Vehicule(depart, arrivee, True)
 
-        message = pickle.dumps(vehicule)  
+        message = pickle.dumps(vehicule)  # Pour sérialiser l'objet vehicule
 
         if depart == "N":
             queue_nord.send(message)
@@ -65,7 +65,7 @@ def generation_trafic_prioritaire(queue_nord, queue_sud, queue_est, queue_ouest)
             print(f"Véhicule Ouest ajouté : {vehicule}")
 
         send_signal(depart)
-        time.sleep(2)
+        time.sleep(12)
 
 
 
