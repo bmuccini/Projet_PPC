@@ -34,4 +34,4 @@ class Feu:
         return self.couleur
     
     def __repr__(self):
-        return f"Feu {self.direction} ({self.position_x}, {self.position_y})"
+        return f"Feu {self.direction} ({self.position_x}, {self.position_y}), {self.couleur}"
