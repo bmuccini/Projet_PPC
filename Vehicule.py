@@ -14,7 +14,7 @@ class Vehicule:
         self.prochain_virage()
 
     def __repr__(self):
-        return f"Véhicule({self.depart}->{self.arrivee}, prioritaire={self.prioritaire})"
+        return f"Véhicule({self.depart}->{self.arrivee}, prioritaire={self.prioritaire}), coords=({self.position_x}, {self.position_y})"
 
 
     def positionnement_vehicule(self):
