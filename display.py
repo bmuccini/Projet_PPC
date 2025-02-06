@@ -82,10 +82,15 @@ class Display() :
     # Fonction pour dessiner les feux
     def draw_lights(self):
 
+        
         if not self.feux:  # pour éviter les erreurs quand aucun feu n'est disponible
             return
         
         for key, feu in self.feux.items() :
+            print(feu)
+            feu : Feu
+
+            print(feu.couleur)
             if feu is None:  # Éviter les erreurs si un feu est `None`
                 #print(f"⚠️ WARNING: Le feu {key} est None et ne peut pas être dessiné.")
                 continue  # Passer au prochain feu

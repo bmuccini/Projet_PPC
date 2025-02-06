@@ -33,11 +33,12 @@ def send_update_to_display(lights, vehicules):
             s.settimeout(2)
             s.connect(('localhost', 65436))
             data = {"lights": lights, "vehicules": vehicules}
-            print("Envoi data : ", data)
+            #print("Envoi data : ", data)
             s.sendall(pickle.dumps(data))
   
     except ConnectionRefusedError:
-        print("⚠️ `display.py` n'est pas en cours d'exécution.")
+        #print("⚠️ `display.py` n'est pas en cours d'exécution.")
+        a=1
     except Exception as e:
         print(f"⚠️ Erreur de connexion avec `display.py` : {e}")
 
@@ -56,7 +57,6 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
 
         messages_temp = []  # Stockage temporaire des véhicules
 
-    
         try:
             message, _ = queue.receive()  # Lire sans bloquer
             vehicule = pickle.loads(message)
@@ -101,12 +101,13 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
             queue.send(pickle.dumps(vehicule))
             liste_vehicules.append(vehicule)
 
+    #print("proutiflex")
     # 📡 Mise à jour de l'affichage
     send_update_to_display(shared_lights, liste_vehicules)
 
 
 
-def verif_feu (vehicule, feu) :
+def verif_feu (vehicule: Vehicule, feu : Feu) :
 
     difference_position_x = abs(vehicule.position_x - feu.position_x)
     difference_position_y = abs(vehicule.position_y - feu.position_y)
@@ -117,8 +118,9 @@ def verif_feu (vehicule, feu) :
     else :
         return False
 
-def verif_vehicule_devant (vehicule, queue) :
+def verif_vehicule_devant (vehicule : Vehicule, queue) :
     messages_temp = []
+    vehicule_devant = False
     while True:
         try:
             message, _ = queue.receive(block=False)  # Lire sans bloquer
@@ -131,38 +133,51 @@ def verif_vehicule_devant (vehicule, queue) :
                 difference_position_y = abs(vehicule.position_y - vehicule_devant.position_y)
 
                 if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation == vehicule_devant.orientation: #coordonnées à changer
-                    return True 
+                    vehicule_devant =True 
 
         except sysv_ipc.BusyError:
                 break  # La file est vide, on arrête la boucle
 
     for vehicule in messages_temp:
             queue.send(pickle.dumps(vehicule))
-            
+
+    return vehicule_devant  
         
 
+def verif_priorite_droite (vehicule : Vehicule, queue_face):
+    messages_temp = []
 
-def verif_priorite_droite (vehicule, queue_face):
+    priorite_droite = False
     if vehicule.prochain_virage == "face" or vehicule.prochain_virage == "droite" :
-        return False
+        return priorite_droite
     
     else : 
-        while queue_face.current_messages == 0:
-            message, _ = queue_face.receive()
-            vehicule_face = (pickle.loads(message))
+        while True:
+            try:
+                message, _ = queue_face.receive(block=False)  # Lire sans bloquer
+                
+                vehicule_face = (pickle.loads(message))
 
-            if vehicule_face != vehicule :
-                difference_position_x = abs(vehicule.position_x - vehicule_face.position_x)
-                difference_position_y = abs(vehicule.position_y - vehicule_face.position_y)
+                messages_temp.append(vehicule)
 
-                if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != vehicule_face.orientation: #coordonnées à changer
-                    
-                    if vehicule_face.prochain_virage == "face" or vehicule_face.prochain_virage == "droite" :
-                        return True
-       
-    return False
+                if vehicule_face != vehicule :
+                    difference_position_x = abs(vehicule.position_x - vehicule_face.position_x)
+                    difference_position_y = abs(vehicule.position_y - vehicule_face.position_y)
 
-def verif_virage (vehicule):
+                    if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation != vehicule_face.orientation: #coordonnées à changer
+                        
+                        if vehicule_face.prochain_virage == "face" or vehicule_face.prochain_virage == "droite" :
+                            priorite_droite = True
+
+            except sysv_ipc.BusyError:
+                break  # La file est vide, on arrête la boucle
+
+        for vehicule in messages_temp:
+                queue_face.send(pickle.dumps(vehicule))   
+        
+        return priorite_droite
+
+def verif_virage (vehicule : Vehicule):
     if vehicule.depart == "N":
         if vehicule.arrivee == "E":
             point_virage_x = 0 #a changer
