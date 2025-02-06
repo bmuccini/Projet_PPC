@@ -3,7 +3,7 @@ class Feu:
     def __init__(self, direction):
         self.direction= direction
 
-        self.couleur = "rouge" #On l'initialise  à rouge pour la sécurité
+        self.couleur = "caca" #On l'initialise  à rouge pour la sécurité
 
         self.positionnement_feu ()
 

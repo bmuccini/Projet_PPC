@@ -47,6 +47,8 @@ class TrafficLight:
             else:
                 # Cycle normal
                 self.normal_cycle()
+            
+            
 
     def _handle_priority(self):
         """Gère l'activation des feux prioritaires."""

@@ -1,16 +1,3 @@
-"""from multiprocessing import Manager
-
-def create_shared_memory():
-    #Fonction qui crée une mémoire partagée sous forme de dictionnaire géré par Manager().dict() pour stocker l'état des feux
-    manager = Manager()
-    shared_lights = manager.dict({  # multiprocessing.Manager().dict() permet de stocker plusieurs valeurs (feux N, S, E, W), mieux que Value() ou Array()
-        "N": "rouge",
-        "S": "rouge",  # C’est juste la valeur de départ au lancement du programme, ne signifie pas que le feu du sud restera toujours rouge
-        "E": "vert",
-        "W": "vert"
-    })
-    return shared_lights"""
-
 from Feu import Feu
 import sysv_ipc
 import pickle
@@ -33,10 +20,19 @@ def create_shared_memory():
     
     
     shm = sysv_ipc.SharedMemory(SHM_KEY, sysv_ipc.IPC_CREX, size=4096)
-    initial_data = {"N": feu_nord , "S": feu_sud, "E": feu_est, "W": feu_ouest, "priorite": None}  #les objets ne sont pas toujours bien sérialisés avec pickle en mémoire partagée
+    initial_data = {"N": feu_nord , "S": feu_sud, "E": feu_est, "W": feu_ouest}  #les objets ne sont pas toujours bien sérialisés avec pickle en mémoire partagée
     shm.write(pickle.dumps(initial_data))
    
     return shm
+
+def connect_to_shared_memory():
+    """Se connecte à la mémoire partagée existante sans la recréer."""
+    try:
+        return sysv_ipc.SharedMemory(SHM_KEY)  # Retourne la mémoire partagée si elle existe
+    except sysv_ipc.ExistentialError:
+        print("❌ La mémoire partagée n'existe pas !")
+        return None  # Retourne None si elle n'existe pas
+
 
 
 def get_shared_lights(shm):
@@ -46,6 +42,8 @@ def get_shared_lights(shm):
         objet_deserialized = pickle.loads(data.strip(b'\x00'))
         #print (objet_deserialized)
         #return pickle.loads(data.strip(b'\x00'))  # Supprimer les octets nuls et désérialiser
+        
+
         return objet_deserialized
     except pickle.UnpicklingError:
         print("Erreur de lecture mémoire partagée, relecture en cours...")
@@ -54,6 +52,7 @@ def get_shared_lights(shm):
 def set_shared_lights(shm, lights):
     """Écrit les états des feux dans la mémoire partagée."""
     shm.write(pickle.dumps(lights))
+
 
 def update_shared_lights(shm, key, new_value):
     lights = get_shared_lights(shm)
