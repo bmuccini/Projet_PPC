@@ -96,6 +96,20 @@ class Vehicule:
         if (self.depart == "S" and self.arrivee == "W") or (self.depart == "N" and self.arrivee == "E") or (self.depart == "E" and self.arrivee == "S") or (self.depart == "W" and self.arrivee == "N"):
             self.virage = "gauche"
 
+    def tourner(self):
+        if self.arrivee == "N":
+            if 610 < self.position_x < 690:
+                self.orientation = self.arrivee
+        elif self.arrivee == "S":
+            if 510 < self.position_x < 590:
+                self.orientation = self.arrivee
+        elif self.arrivee == "E":
+            if 410 < self.position_y < 490:
+                self.orientation = self.arrivee
+        elif self.arrivee == "W":
+            if 310 < self.position_y < 390:
+                self.orientation = self.arrivee
+
     def avant_feu(self):
         if self.depart == "N":
             return 200 < self.position_y < 270
@@ -107,7 +121,7 @@ class Vehicule:
             return 400 < self.position_x < 470
     
     def doit_arreter_derriere(self, vehicule):
-        if self.depart != vehicule.depart:
+        if self.depart != vehicule.depart or self.orientation != vehicule.orientation:
             return False
         
         if self.depart == "N":

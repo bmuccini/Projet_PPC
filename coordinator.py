@@ -61,15 +61,13 @@ def gerer_trafic():
     for vehicule in liste_vehicules:
         if not doit_arreter_au_feu(vehicule) and not doit_arreter_derriere_vehicule(vehicule):
             vehicule.avancer()
+            vehicule.tourner()
     supprimer_vehicules()
     #print(liste_vehicules)
     send_update_to_display(shared_lights, liste_vehicules)
 
 def supprimer_vehicules():
     liste_vehicules[:] = [vehicule for vehicule in liste_vehicules if not vehicule_est_sorti(vehicule)]
-
-
-
 
 # def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
 #     shared_lights = get_shared_lights(shm)
@@ -170,33 +168,35 @@ def doit_arreter_derriere_vehicule(vehicule : Vehicule):
     for v in liste_vehicules:
         if v == vehicule:
             continue
-        return vehicule.doit_arreter_derriere(v)
+        if vehicule.doit_arreter_derriere(v):
+            return True
+    return False
             
 
-def verif_vehicule_devant (vehicule : Vehicule, queue) :
-    messages_temp = []
-    vehicule_devant = False
-    while True:
-        try:
-            message, _ = queue.receive(block=False)  # Lire sans bloquer
-            vehicule_devant = (pickle.loads(message))
+# def verif_vehicule_devant (vehicule : Vehicule, queue) :
+#     messages_temp = []
+#     vehicule_devant = False
+#     while True:
+#         try:
+#             message, _ = queue.receive(block=False)  # Lire sans bloquer
+#             vehicule_devant = (pickle.loads(message))
 
-            messages_temp.append(vehicule)
+#             messages_temp.append(vehicule)
 
-            if vehicule_devant != vehicule :
-                difference_position_x = abs(vehicule.position_x - vehicule_devant.position_x)
-                difference_position_y = abs(vehicule.position_y - vehicule_devant.position_y)
+#             if vehicule_devant != vehicule :
+#                 difference_position_x = abs(vehicule.position_x - vehicule_devant.position_x)
+#                 difference_position_y = abs(vehicule.position_y - vehicule_devant.position_y)
 
-                if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation == vehicule_devant.orientation: #coordonnées à changer
-                    vehicule_devant =True 
+#                 if difference_position_x < 50 and difference_position_y < 50 and vehicule.orientation == vehicule_devant.orientation: #coordonnées à changer
+#                     vehicule_devant =True 
 
-        except sysv_ipc.BusyError:
-                break  # La file est vide, on arrête la boucle
+#         except sysv_ipc.BusyError:
+#                 break  # La file est vide, on arrête la boucle
 
-    for vehicule in messages_temp:
-            queue.send(pickle.dumps(vehicule))
+#     for vehicule in messages_temp:
+#             queue.send(pickle.dumps(vehicule))
 
-    return vehicule_devant  
+#     return vehicule_devant  
         
 
 def verif_priorite_droite (vehicule : Vehicule, queue_face):
