@@ -58,7 +58,7 @@ class Display() :
         def listener():
     
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(('localhost', 65436))
+                s.bind(('localhost', 65437))
                 s.listen()
                 print("🖥️ `display.py` en attente des mises à jour...")
                 while True:
@@ -87,10 +87,9 @@ class Display() :
             return
         
         for key, feu in self.feux.items() :
-            print(feu)
             feu : Feu
 
-            print(feu.couleur)
+            
             if feu is None:  # Éviter les erreurs si un feu est `None`
                 #print(f"⚠️ WARNING: Le feu {key} est None et ne peut pas être dessiné.")
                 continue  # Passer au prochain feu

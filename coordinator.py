@@ -4,7 +4,7 @@ from Vehicule import Vehicule
 from Feu import Feu
 import socket
 import time
-from shared_memory import create_shared_memory, get_shared_lights  # Importer la mémoire partagée
+from shared_memory import create_shared_memory, get_shared_lights, connect_to_shared_memory  # Importer la mémoire partagée
 
 # Clés pour les files de messages
 KEY_NORD = 1000
@@ -31,7 +31,7 @@ def send_update_to_display(lights, vehicules):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(2)
-            s.connect(('localhost', 65436))
+            s.connect(('localhost', 65437))
             data = {"lights": lights, "vehicules": vehicules}
             #print("Envoi data : ", data)
             s.sendall(pickle.dumps(data))
@@ -45,6 +45,10 @@ def send_update_to_display(lights, vehicules):
 
 def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
     shared_lights = get_shared_lights(shm)
+    """
+    for feu in shared_lights.values():
+        print(feu.couleur)
+    """
     liste_vehicules = []
 
     for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
@@ -228,7 +232,7 @@ def verif_sortie_display (vehicule):
 
 
 if __name__ == "__main__":
-    shm = create_shared_memory()  # Mémoire partagée commune
+    shm = connect_to_shared_memory() # Mémoire partagée commune
     #shared_lights = create_shared_memory()  # Initialisation mémoire partagée
     
     while True: 
