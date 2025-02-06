@@ -5,6 +5,8 @@ import pickle
 from Feu import Feu
 from Vehicule import Vehicule
 
+pygame.init()
+
 # Dimensions de la fenêtre
 
 WIDTH, HEIGHT = 1200, 800
@@ -29,7 +31,7 @@ CROSSROAD_Y = HEIGHT // 2 - ROAD_WIDTH // 2
 class Display() : 
 
     def __init__(self):
-        pygame.init()
+        #pygame.init()
         self.width = 1200
         self.height = 800
         self.screen = pygame.display.set_mode((self.width, self.height))
