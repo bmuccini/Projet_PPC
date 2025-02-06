@@ -8,6 +8,7 @@ pkill -f lights.py
 pkill -f coordinator.py
 pkill -f normal_trafic_gen.py
 pkill -f priority_trafic_gen.py
+pkill -f shared_memory.py
 
 echo "✅ Tous les processus ont été arrêtés."
 

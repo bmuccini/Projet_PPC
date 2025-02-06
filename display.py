@@ -103,10 +103,10 @@ class Display() :
 
     # Fonction pour dessiner les véhicules
     def draw_vehicles(self):
-           if not self.liste_vehicules:  # pour éviter les erreurs quand aucun véhicule n'est disponible
-               return
-           
-           for vehicule in self.liste_vehicules :
+        if not self.liste_vehicules:  # pour éviter les erreurs quand aucun véhicule n'est disponible
+            return
+        
+        for vehicule in self.liste_vehicules :
 
             if vehicule.prioritaire == True :
                 couleur = BLUE

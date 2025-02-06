@@ -64,7 +64,7 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
         try:
             message, _ = queue.receive()  # Lire sans bloquer
             vehicule = pickle.loads(message)
-            # print(f"Le coordinator a reçu le vehicule :", vehicule.position_x, vehicule.position_y)
+            #print(f"Le coordinator a reçu le vehicule :", vehicule)
             # 🚦 Gestion du trafic
             if verif_vehicule_devant(vehicule, queue):
                 vehicule.arreter()
@@ -83,6 +83,7 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
                     queue_face = queue_est
 
                 if verif_priorite_droite(vehicule, queue_face):
+                    print(vehicule, "STOP !!!")
                     vehicule.arreter()
                 elif verif_virage(vehicule):
                     if vehicule.prochain_virage == "gauche":
@@ -90,13 +91,16 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
                     elif vehicule.prochain_virage == "droite":
                         vehicule.tourner_droite()
                     vehicule.avancer()
+                    print(vehicule, "avance")
             else:
                 vehicule.avancer()
+                print(vehicule, "avance")
 
             # 🚗 Ajouter le véhicule dans la liste s'il est toujours dans la simulation
             if not verif_sortie_display(vehicule):
                 messages_temp.append(vehicule)
 
+            print("Nouvelles coordonnées du vehicule : ", vehicule)
         except sysv_ipc.BusyError:
             break  # La file est vide, on arrête la boucle
 
@@ -215,7 +219,7 @@ def verif_virage (vehicule : Vehicule):
             point_virage_y = 0 #a changer
     
     if abs(vehicule.position_x - point_virage_x < 5) and abs(vehicule.position_y - point_virage_y < 5) : 
-         return True
+        return True
     
     else :
         return False
@@ -238,4 +242,4 @@ if __name__ == "__main__":
     while True: 
         queue_nord, queue_sud, queue_est, queue_ouest = ouvrir_files_messages()  # Ouverture files de messages
         gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm)  # Démarrage gestion du trafic
-        time.sleep(1)
+        time.sleep(2)
