@@ -1,6 +1,6 @@
 from Feu import Feu
 import time
-#import sysv_ipc
+import sysv_ipc
 import threading
 import socket
 from shared_memory import create_shared_memory, get_shared_lights, set_shared_lights

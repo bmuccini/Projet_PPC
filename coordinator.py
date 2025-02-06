@@ -12,8 +12,7 @@ KEY_SUD = 1001
 KEY_EST = 1002
 KEY_OUEST = 1003
 
-# Port de communication avec `display.py`
-DISPLAY_PORT = 65433
+
 
 def ouvrir_files_messages():
     """Ouvre les files de messages System V."""
@@ -22,6 +21,7 @@ def ouvrir_files_messages():
         queue_sud = sysv_ipc.MessageQueue(KEY_SUD)
         queue_est = sysv_ipc.MessageQueue(KEY_EST)
         queue_ouest = sysv_ipc.MessageQueue(KEY_OUEST)
+
         return queue_nord, queue_sud, queue_est, queue_ouest
     except sysv_ipc.ExistentialError:
         print("Erreur : Les files de messages n'existent pas.")
@@ -31,8 +31,8 @@ def send_update_to_display(lights, vehicules):
     """Envoie l'état des feux et des véhicules à `display.py` via sockets."""
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect(("localhost", DISPLAY_PORT))
-            data = {"lights": lights, "vehicles": vehicules}
+            s.connect(("127.0.0.1", 65433))
+            data = {"lights": lights, "vehicules": vehicules}
             s.sendall(pickle.dumps(data))
     except ConnectionRefusedError:
         print("⚠️ `display.py` n'est pas en cours d'exécution.")
@@ -76,7 +76,7 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
                 vehicule.avancer()
 
             liste_vehicules.append(vehicule)
-
+        print("caca")
     send_update_to_display(shared_lights, liste_vehicules)
 
 def verif_feu (vehicule, feu) :
