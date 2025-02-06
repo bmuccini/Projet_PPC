@@ -2,6 +2,10 @@
 
 echo "Démarrage de la simulation du carrefour..."
 
+
+python clear_queues.py & DISPLAY_PID=$!
+
+sleep 1
 python shared_memory.py & DISPLAY_PID=$!
 
 sleep 1

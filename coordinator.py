@@ -242,4 +242,4 @@ if __name__ == "__main__":
     while True: 
         queue_nord, queue_sud, queue_est, queue_ouest = ouvrir_files_messages()  # Ouverture files de messages
         gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm)  # Démarrage gestion du trafic
-        time.sleep(2)
+        time.sleep(1)
