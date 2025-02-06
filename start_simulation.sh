@@ -3,10 +3,8 @@
 echo "Démarrage de la simulation du carrefour..."
 
 
-python clear_queues.py & DISPLAY_PID=$!
-
-sleep 1
-python shared_memory.py & DISPLAY_PID=$!
+python clear_queues.py
+python shared_memory.py
 
 sleep 1
 # Exécuter les processus en arrière-plan (& permet de ne pas bloquer le terminal)
@@ -19,14 +17,15 @@ sleep 3
 python3 lights.py &
 LIGHTS_PID=$!
 
-python3 coordinator.py &
-COORDINATOR_PID=$!
-
 python3 normal_trafic_gen.py &
 NORMAL_PID=$!
 
-python3 priority_trafic_gen.py &
-PRIORITY_PID=$!
+python3 coordinator.py &
+COORDINATOR_PID=$!
+
+
+# python3 priority_trafic_gen.py &
+# PRIORITY_PID=$!
 
 echo "Tous les processus sont lancés !"
 
