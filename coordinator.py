@@ -48,48 +48,53 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
 
     for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
         feu = shared_lights[direction]
+        """feu_nord = shared_lights["N"]
+            feu_sud = shared_lights["S"]
+            feu_est = shared_lights["E"]
+            feu_ouest = shared_lights["W"]
+            print(f"Etat des feux : N={feu_nord}, S={feu_sud}, E={feu_est}, W={feu_ouest})"""
 
         messages_temp = []  # Stockage temporaire des véhicules
 
-        while True:
-            try:
-                message, _ = queue.receive(block=False)  # Lire sans bloquer
-                vehicule : Vehicule = pickle.loads(message)
+    
+        try:
+            message, _ = queue.receive()  # Lire sans bloquer
+            vehicule : Vehicule = pickle.loads(message)
 
-                # 🚦 Gestion du trafic
-                if verif_vehicule_devant(vehicule, queue):
+            # 🚦 Gestion du trafic
+            if verif_vehicule_devant(vehicule, queue):
+                vehicule.arreter()
+            
+            elif feu.couleur == "rouge" and verif_feu(vehicule, feu):
+                vehicule.arreter()
+
+            elif -100 < vehicule.position_x < 100 and -100 < vehicule.position_y < 100:  # Dans le carrefour
+                if direction == "N" :
+                    queue_face = queue_sud
+                elif direction == "S" :
+                    queue_face = queue_nord
+                elif direction == "E" :
+                    queue_face = queue_ouest
+                else :
+                    queue_face = queue_est
+
+                if verif_priorite_droite(vehicule, queue_face):
                     vehicule.arreter()
-                
-                elif feu.couleur == "rouge" and verif_feu(vehicule, feu):
-                    vehicule.arreter()
-
-                elif -100 < vehicule.position_x < 100 and -100 < vehicule.position_y < 100:  # Dans le carrefour
-                    if direction == "N" :
-                        queue_face = queue_sud
-                    elif direction == "S" :
-                        queue_face = queue_nord
-                    elif direction == "E" :
-                        queue_face = queue_ouest
-                    else :
-                        queue_face = queue_est
-
-                    if verif_priorite_droite(vehicule, queue_face):
-                        vehicule.arreter()
-                    elif verif_virage(vehicule):
-                        if vehicule.prochain_virage == "gauche":
-                            vehicule.tourner_gauche()
-                        elif vehicule.prochain_virage == "droite":
-                            vehicule.tourner_droite()
-                        vehicule.avancer()
-                else:
+                elif verif_virage(vehicule):
+                    if vehicule.prochain_virage == "gauche":
+                        vehicule.tourner_gauche()
+                    elif vehicule.prochain_virage == "droite":
+                        vehicule.tourner_droite()
                     vehicule.avancer()
+            else:
+                vehicule.avancer()
 
-                # 🚗 Ajouter le véhicule dans la liste s'il est toujours dans la simulation
-                if not verif_sortie_display(vehicule):
-                    messages_temp.append(vehicule)
+            # 🚗 Ajouter le véhicule dans la liste s'il est toujours dans la simulation
+            if not verif_sortie_display(vehicule):
+                messages_temp.append(vehicule)
 
-            except sysv_ipc.BusyError:
-                break  # La file est vide, on arrête la boucle
+        except sysv_ipc.BusyError:
+            break  # La file est vide, on arrête la boucle
 
         # 📨 Réinsérer les véhicules dans la file
         for vehicule in messages_temp:
