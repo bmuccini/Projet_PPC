@@ -58,7 +58,7 @@ class Display() :
         def listener():
     
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(('localhost', 65435))
+                s.bind(('localhost', 65436))
                 s.listen()
                 print("🖥️ `display.py` en attente des mises à jour...")
                 while True:
@@ -69,7 +69,10 @@ class Display() :
                             if data:
                                 update = pickle.loads(data)
                             
-                                self.feux = update["lights"]
+                                self.feux = {
+                                    key: value if isinstance(value, Feu) else None
+                                    for key, value in update.get("lights", {}).items()
+                                }
                                 self.liste_vehicules = update["vehicules"]
                     except Exception as e:
                         print(f"Erreur de réception de données: {e}")
@@ -82,7 +85,11 @@ class Display() :
         if not self.feux:  # pour éviter les erreurs quand aucun feu n'est disponible
             return
         
-        for feu in self.feux.values() :
+        for key, feu in self.feux.items() :
+            if feu is None:  # Éviter les erreurs si un feu est `None`
+                #print(f"⚠️ WARNING: Le feu {key} est None et ne peut pas être dessiné.")
+                continue  # Passer au prochain feu
+            
             if feu.couleur == "vert":
                 couleur = GREEN
             else :
@@ -128,7 +135,7 @@ while running:
     # Mets à jour l'affichage
     pygame.display.flip()
     pygame.time.delay(30)  # Rafraîchissement à 30 FPS
-    pygame.time.wait(50)
+    #pygame.time.wait(50)
 
 # Quitte Pygame
 pygame.quit()

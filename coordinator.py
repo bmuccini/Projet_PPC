@@ -31,7 +31,7 @@ def send_update_to_display(lights, vehicules):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(2)
-            s.connect(('localhost', 65435))
+            s.connect(('localhost', 65436))
             data = {"lights": lights, "vehicules": vehicules}
             print("Envoi data : ", data)
             s.sendall(pickle.dumps(data))
@@ -100,8 +100,6 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
         for vehicule in messages_temp:
             queue.send(pickle.dumps(vehicule))
             liste_vehicules.append(vehicule)
-
-    print('proutiflex')
 
     # 📡 Mise à jour de l'affichage
     send_update_to_display(shared_lights, liste_vehicules)

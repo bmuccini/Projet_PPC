@@ -55,7 +55,7 @@ class Vehicule:
 
     
     def arreter(self):
-        print("hello")
+        pass
 
     def tourner_gauche (self):
 

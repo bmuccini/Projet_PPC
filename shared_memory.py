@@ -44,7 +44,7 @@ def get_shared_lights(shm):
     data = shm.read()
     try:
         objet_deserialized = pickle.loads(data.strip(b'\x00'))
-        print (objet_deserialized)
+        #print (objet_deserialized)
         #return pickle.loads(data.strip(b'\x00'))  # Supprimer les octets nuls et désérialiser
         return objet_deserialized
     except pickle.UnpicklingError:
