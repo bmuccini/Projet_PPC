@@ -6,9 +6,9 @@ class Vehicule:
         self.prioritaire = prioritaire
         
         if prioritaire :
-            self.vitesse = 100
-        else :
             self.vitesse = 80
+        else :
+            self.vitesse = 50
         
         self.positionnement_vehicule()
         self.prochain_virage()
@@ -95,3 +95,13 @@ class Vehicule:
 
         if (self.depart == "S" and self.arrivee == "W") or (self.depart == "N" and self.arrivee == "E") or (self.depart == "E" and self.arrivee == "S") or (self.depart == "W" and self.arrivee == "N"):
             self.virage = "gauche"
+
+    def avant_feu(self):
+        if self.depart == "N":
+            return 200 < self.position_y < 270
+        if self.depart == "S":
+            return 510 < self.position_y < 580
+        if self.depart == "E":
+            return 710 < self.position_x < 780
+        if self.depart == "W":
+            return 400 < self.position_x < 470

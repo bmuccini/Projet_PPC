@@ -59,9 +59,10 @@ def recuperer_vehicules(queues):
 def gerer_trafic():
     shared_lights = get_shared_lights(shm)
     for vehicule in liste_vehicules:
-        vehicule.avancer()
+        if not doit_arreter_au_feu(vehicule):
+            vehicule.avancer()
     supprimer_vehicules()
-    print(liste_vehicules)
+    #print(liste_vehicules)
     send_update_to_display(shared_lights, liste_vehicules)
 
 def supprimer_vehicules():
@@ -144,7 +145,7 @@ def supprimer_vehicules():
 
 
 
-def verif_feu(vehicule: Vehicule, feu : Feu) :
+""" def verif_feu(vehicule: Vehicule, feu : Feu) :
 
     difference_position_x = abs(vehicule.position_x - feu.position_x)
     difference_position_y = abs(vehicule.position_y - feu.position_y)
@@ -153,7 +154,17 @@ def verif_feu(vehicule: Vehicule, feu : Feu) :
         return True
     
     else :
-        return False
+        return False """
+
+def doit_arreter_au_feu(vehicule : Vehicule):
+    feux = get_shared_lights(shm)
+    feu = feux[vehicule.depart]
+
+    if vehicule.avant_feu():
+        if feu.couleur == "rouge" :
+            return True
+        else:
+            return False
 
 def verif_vehicule_devant (vehicule : Vehicule, queue) :
     messages_temp = []
@@ -268,4 +279,4 @@ if __name__ == "__main__":
     while True: 
         recuperer_vehicules(queues= queues)
         gerer_trafic()
-        time.sleep(2)
+        time.sleep(1)
