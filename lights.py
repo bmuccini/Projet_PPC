@@ -43,12 +43,12 @@ class TrafficLight:
         while True:
             if self.priority_event.is_set():
                 # Phase prioritaire (4s vert + 1s rouge)
-                self.handle_priority()
+                self._handle_priority()
             else:
                 # Cycle normal
                 self.normal_cycle()
 
-    def handle_priority(self):
+    def _handle_priority(self):
         """Gère l'activation des feux prioritaires."""
         # Feu prioritaire vert
 

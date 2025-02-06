@@ -29,11 +29,14 @@ def ouvrir_files_messages():
 
 def send_update_to_display(lights, vehicules):
     """Envoie l'état des feux et des véhicules à `display.py` via sockets."""
+    
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect(("127.0.0.1", 65433))
+            s.settimeout(2)
+            s.connect(('localhost', 65435))
             data = {"lights": lights, "vehicules": vehicules}
             s.sendall(pickle.dumps(data))
+  
     except ConnectionRefusedError:
         print("⚠️ `display.py` n'est pas en cours d'exécution.")
     except Exception as e:
@@ -42,6 +45,11 @@ def send_update_to_display(lights, vehicules):
 ###Ce que j'ai fait###
 def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
     shared_lights = get_shared_lights(shm)
+    
+    message, _ = queue_nord.receive()
+    vehicule : Vehicule = (pickle.loads(message))
+    print(vehicule.prioritaire)
+    
     liste_vehicules = list()
     
     for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
@@ -73,10 +81,13 @@ def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
             
             else :
                 verif_virage (vehicule)
+                        
+
+
                 vehicule.avancer()
 
             liste_vehicules.append(vehicule)
-        print("caca")
+
     send_update_to_display(shared_lights, liste_vehicules)
 
 def verif_feu (vehicule, feu) :
@@ -159,15 +170,26 @@ def verif_virage (vehicule):
             point_virage_y = 0 #a changer
     
     if abs(vehicule.position_x - point_virage_x < 5) and abs(vehicule.position_y - point_virage_y < 5) : 
-        if vehicule.prochain_virage == "gauche":
-            vehicule.tourner_gauche()
+         return True
+    
+    else :
+        return False
 
-        elif vehicule.prochain_virage == "droite":
-             vehicule.tourner_droite()
+
+def verif_sortie_display (vehicule):
+
+    if ( 0 <= vehicule.position_x <= 1200 ) and ( 0 <= vehicule.position_y <= 800 ):
+        return True
+    
+    else : 
+        return False
+
 
 
 if __name__ == "__main__":
     shm = create_shared_memory()  # Mémoire partagée commune
     #shared_lights = create_shared_memory()  # Initialisation mémoire partagée
-    queue_nord, queue_sud, queue_est, queue_ouest = ouvrir_files_messages()  # Ouverture files de messages
-    gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm)  # Démarrage gestion du trafic
+    
+    while True: 
+        queue_nord, queue_sud, queue_est, queue_ouest = ouvrir_files_messages()  # Ouverture files de messages
+        gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm)  # Démarrage gestion du trafic
