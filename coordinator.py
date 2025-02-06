@@ -35,6 +35,7 @@ def send_update_to_display(lights, vehicules):
             s.settimeout(2)
             s.connect(('localhost', 65435))
             data = {"lights": lights, "vehicules": vehicules}
+            print("Envoi data : ", data)
             s.sendall(pickle.dumps(data))
   
     except ConnectionRefusedError:
@@ -45,45 +46,54 @@ def send_update_to_display(lights, vehicules):
 ###Ce que j'ai fait###
 def gerer_traffic(queue_nord, queue_sud, queue_est, queue_ouest, shm):
     shared_lights = get_shared_lights(shm)
+    """feu_nord = shared_lights["N"]
+            feu_sud = shared_lights["S"]
+            feu_est = shared_lights["E"]
+            feu_ouest = shared_lights["W"]
+            print(f"Etat des feux : N={feu_nord}, S={feu_sud}, E={feu_est}, W={feu_ouest})"""
     liste_vehicules = list()
-    
-    for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
-        feu = shared_lights[direction]
+    while True :
+        shared_lights = get_shared_lights(shm)
+        for direction, queue in [("N", queue_nord), ("S", queue_sud), ("E", queue_est), ("W", queue_ouest)]:
+            feu = shared_lights[direction]
 
-        while queue.current_messages == 0:
-            message, _ = queue.receive()
-            vehicule : Vehicule = (pickle.loads(message))  # Pour desérialiser l'objet vehicule
+            while queue.current_messages == 0:
+                try:
+                    message, _ = queue.receive(block=False)  # Non-blocking
+                    vehicule : Vehicule = (pickle.loads(message))  # Pour desérialiser l'objet vehicule
+                except queue.Empty:
+                    continue  # No messages, go to next iteration
 
-            if verif_vehicule_devant(vehicule, queue) :
-                vehicule.arreter()
-            
-            elif feu.couleur == "rouge":
-                if verif_feu (vehicule, feu) :
-                    vehicule.arreter()
+            #liste_vehicules.append(vehicule)
 
-            elif  (-100 < vehicule.position_x < 100) and (-100 < vehicule.position_y < 100) : #coordonnées à modifier
-                if direction == "N" :
-                    queue_face = queue_sud
-                elif direction == "S" :
-                    queue_face = queue_nord
-                elif direction == "E" :
-                    queue_face = queue_ouest
-                else :
-                    queue_face = queue_est
                 
-                if verif_priorite_droite (vehicule, queue_face):
+                if verif_vehicule_devant(vehicule, queue) :
                     vehicule.arreter()
-            
-            else :
-                verif_virage (vehicule)
-                        
+                
+                elif feu.couleur == "rouge":
+                    if verif_feu (vehicule, feu) :
+                        vehicule.arreter()
 
+                elif  (-100 < vehicule.position_x < 100) and (-100 < vehicule.position_y < 100) : #coordonnées à modifier
+                    if direction == "N" :
+                        queue_face = queue_sud
+                    elif direction == "S" :
+                        queue_face = queue_nord
+                    elif direction == "E" :
+                        queue_face = queue_ouest
+                    else :
+                        queue_face = queue_est
+                    
+                    if verif_priorite_droite (vehicule, queue_face):
+                        vehicule.arreter()
+                
+                else :
+                    verif_virage (vehicule)
+                    vehicule.avancer()
 
-                vehicule.avancer()
-
-            liste_vehicules.append(vehicule)
-
-    send_update_to_display(shared_lights, liste_vehicules)
+                liste_vehicules.append(vehicule)
+            #print("caca")
+        send_update_to_display(shared_lights, liste_vehicules)
 
 def verif_feu (vehicule, feu) :
 
